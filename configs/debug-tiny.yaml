@@ -1,0 +1,8 @@
+# Smoke-test config: a few epochs of a narrow CNN. Not for reporting.
+base: baseline.yaml
+model:
+  channels: [8, 16, 32, 32]
+  gradcam_layer: blocks.3.body
+train:
+  epochs: 2
+  warmup_epochs: 1

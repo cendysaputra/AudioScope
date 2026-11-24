@@ -1,0 +1,4 @@
+# Stage 2: baseline + random circular time shift of the waveform (up to ±50% of the clip).
+base: baseline.yaml
+augment:
+  time_shift: 0.5

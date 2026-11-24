@@ -1,0 +1,8 @@
+# Stage 2: baseline + SpecAugment (Park et al., 2019). Training batches only.
+base: baseline.yaml
+augment:
+  specaugment: true
+  freq_mask_param: 8
+  time_mask_param: 24
+  num_freq_masks: 2
+  num_time_masks: 2

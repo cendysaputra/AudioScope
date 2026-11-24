@@ -1,0 +1,38 @@
+# Stage 1: small CNN trained from scratch on log-mel spectrograms.
+dataset:
+  name: esc50
+  root: data/esc50
+
+features:
+  sample_rate: 22050
+  clip_seconds: 5.0
+  n_fft: 1024
+  hop_length: 512
+  n_mels: 64
+  f_min: 0.0
+  f_max: null          # sample_rate / 2
+  mel_scale: slaney
+  mel_norm: slaney
+  log: natural
+  log_offset: 1.0e-6
+  kind: logmel
+  normalize: per_band  # statistics from the training clips of each fold
+
+model:
+  name: baseline_cnn
+  channels: [32, 64, 128, 256]
+  convs_per_block: 1
+  dropout: 0.3
+  gradcam_layer: blocks.3.body
+
+augment: {}
+
+train:
+  seed: 0
+  epochs: 60
+  batch_size: 32
+  lr: 1.0e-3
+  weight_decay: 1.0e-2
+  warmup_epochs: 2
+  val_fraction: 0.1    # taken from the training folds, grouped by source recording
+  early_stopping_patience: null

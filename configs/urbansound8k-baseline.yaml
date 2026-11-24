@@ -1,0 +1,8 @@
+# Optional extension: the baseline under UrbanSound8K's official 10-fold protocol.
+# Clips are up to 4 s; shorter ones are zero-padded.
+base: baseline.yaml
+dataset:
+  name: urbansound8k
+  root: data/urbansound8k
+features:
+  clip_seconds: 4.0

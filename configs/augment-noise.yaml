@@ -1,0 +1,5 @@
+# Stage 2: baseline + additive white noise at a random 10-40 dB SNR on half the clips.
+base: baseline.yaml
+augment:
+  noise_prob: 0.5
+  noise_snr_db: [10.0, 40.0]

@@ -1,0 +1,14 @@
+# Stage 2: all four augmentation families together. Run only after the
+# separate runs are archived.
+base: baseline.yaml
+augment:
+  specaugment: true
+  freq_mask_param: 8
+  time_mask_param: 24
+  num_freq_masks: 2
+  num_time_masks: 2
+  mixup_alpha: 0.2
+  mixup_prob: 1.0
+  time_shift: 0.5
+  noise_prob: 0.5
+  noise_snr_db: [10.0, 40.0]

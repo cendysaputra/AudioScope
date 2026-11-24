@@ -1,0 +1,36 @@
+# Stage 3: PANNs Cnn14 pretrained on AudioSet (Kong et al., 2020), new 50-way head.
+# Checkpoint: Cnn14_mAP=0.431.pth from https://zenodo.org/record/3987831
+# (released by the PANNs authors under CC BY 4.0; confirm before use).
+# The front end below matches the one Cnn14 was trained with.
+base: baseline.yaml
+features:
+  sample_rate: 32000
+  n_fft: 1024
+  hop_length: 320
+  n_mels: 64
+  f_min: 50.0
+  f_max: 14000.0
+  mel_scale: slaney
+  mel_norm: slaney
+  log: db
+  amin: 1.0e-10
+  normalize: none      # Cnn14's own bn0 normalizes each mel band
+model:
+  name: panns_cnn14
+  n_mels: 64
+  checkpoint_path: data/pretrained/Cnn14_mAP=0.431.pth
+  dropout: 0.5
+  gradcam_layer: conv_block5
+augment:
+  specaugment: true
+  freq_mask_param: 8
+  time_mask_param: 40
+  num_freq_masks: 2
+  num_time_masks: 2
+train:
+  epochs: 30
+  batch_size: 16
+  lr: 1.0e-4
+  weight_decay: 1.0e-2
+  warmup_epochs: 1
+  freeze_backbone_epochs: 2

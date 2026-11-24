@@ -1,0 +1,5 @@
+# Stage 2: baseline + mixup (Zhang et al., 2018) on normalized log-mel inputs.
+base: baseline.yaml
+augment:
+  mixup_alpha: 0.2
+  mixup_prob: 1.0

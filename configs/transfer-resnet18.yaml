@@ -1,0 +1,26 @@
+# Stage 3: ImageNet ResNet-18 fine-tuned on log-mel spectrograms.
+# The spectrogram is repeated to 3 channels and resized to 224x224.
+# Needs the torchvision ImageNet weights (downloaded on first use, or set
+# model.weights_path to a local resnet18-f37072fd.pth). License: BSD-3 (torchvision).
+base: baseline.yaml
+model:
+  name: resnet
+  arch: resnet18
+  pretrained: imagenet
+  weights_path: null
+  input_size: [224, 224]
+  dropout: 0.2
+  imagenet_norm: false
+  gradcam_layer: backbone.layer4
+augment:
+  specaugment: true
+  freq_mask_param: 8
+  time_mask_param: 24
+  num_freq_masks: 2
+  num_time_masks: 2
+train:
+  epochs: 30
+  lr: 3.0e-4
+  weight_decay: 1.0e-2
+  warmup_epochs: 1
+  freeze_backbone_epochs: 3
