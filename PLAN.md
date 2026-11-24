@@ -204,7 +204,7 @@ Grad-CAM (Selvaraju et al., 2017) is computed on a convolutional feature map of 
 ```text
 AudioScope/
 ├── README.md                  # public summary; results only from eval runs
-├── plan.md                    # this plan
+├── PLAN.md                    # this plan
 ├── docs/
 │   ├── pipeline.svg           # static pipeline figure
 │   └── pipeline.png

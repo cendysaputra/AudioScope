@@ -10,7 +10,7 @@ The work sits next to two other projects by the same author: [VisionClassify](ht
 
 The primary dataset is [ESC-50](https://github.com/karolpiczak/ESC-50). An optional second dataset is [UrbanSound8K](https://urbansounddataset.weebly.com/urbansound8k.html).
 
-**Status.** This repository is at the planning stage. It contains this README and the project plan. Training code, a trained model, and the demo app are still to be built. See [plan.md](plan.md).
+**Status.** This repository is at the planning stage. It contains this README and the project plan. Training code, a trained model, and the demo app are still to be built. See [PLAN.md](PLAN.md).
 
 ## How it works
 
@@ -24,7 +24,7 @@ Each clip follows one path from audio to a class prediction.
 
 ![AudioScope pipeline](docs/pipeline.svg)
 
-Training follows the same front end. A small CNN is the baseline. Later runs add spectrogram and waveform augmentation, then compare transfer from an ImageNet-pretrained network and from pretrained audio models. The full training plan is in [plan.md](plan.md).
+Training follows the same front end. A small CNN is the baseline. Later runs add spectrogram and waveform augmentation, then compare transfer from an ImageNet-pretrained network and from pretrained audio models. The full training plan is in [PLAN.md](PLAN.md).
 
 ## Features
 
@@ -42,7 +42,7 @@ Audio files are downloaded locally and are not part of this repository. Each dat
 
 ### ESC-50 (primary)
 
-[ESC-50](https://github.com/karolpiczak/ESC-50) (Piczak, 2015) contains 2,000 five-second clips, 50 classes, and 40 clips per class. Clips are mono and sampled at 44.1 kHz. The classes fall into five groups: animals, natural soundscapes and water, human non-speech sounds, interior and domestic sounds, and exterior and urban noises. The release defines five cross-validation folds. Clips that come from the same source recording stay in the same fold. The official citation and the dataset license are on the project page. The paper is listed in [plan.md](plan.md).
+[ESC-50](https://github.com/karolpiczak/ESC-50) (Piczak, 2015) contains 2,000 five-second clips, 50 classes, and 40 clips per class. Clips are mono and sampled at 44.1 kHz. The classes fall into five groups: animals, natural soundscapes and water, human non-speech sounds, interior and domestic sounds, and exterior and urban noises. The release defines five cross-validation folds. Clips that come from the same source recording stay in the same fold. The official citation and the dataset license are on the project page. The paper is listed in [PLAN.md](PLAN.md).
 
 ### UrbanSound8K (optional extension)
 
@@ -63,12 +63,12 @@ Metric computation is planned around standard classification scores (accuracy, m
 
 ## Planned project structure
 
-The tree below is the layout the implementation will follow. The repository currently contains this README, [plan.md](plan.md), and the pipeline figure in `docs/`. The rest of the tree is not created yet.
+The tree below is the layout the implementation will follow. The repository currently contains this README, [PLAN.md](PLAN.md), and the pipeline figure in `docs/`. The rest of the tree is not created yet.
 
 ```text
 AudioScope/
 ├── README.md
-├── plan.md
+├── PLAN.md
 ├── docs/
 │   ├── pipeline.svg         # static pipeline figure
 │   └── pipeline.png
@@ -142,7 +142,7 @@ A figure belongs here only when a script in `eval/` produced it and saved both a
 
 ## Roadmap
 
-The work is sequenced so that a reproducible baseline exists before augmentation, transfer learning, or the demo claim a gain. Detail, task lists, and the evaluation rules are in [plan.md](plan.md).
+The work is sequenced so that a reproducible baseline exists before augmentation, transfer learning, or the demo claim a gain. Detail, task lists, and the evaluation rules are in [PLAN.md](PLAN.md).
 
 1. Repository skeleton, data download, and official fold splits.
 2. Log-mel features, checked against a reference implementation.
