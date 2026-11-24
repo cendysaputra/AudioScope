@@ -22,8 +22,8 @@ data/*
 *.pth
 *.ckpt
 checkpoints/
-eval/runs/*
-!eval/runs/.gitkeep
+# Run directories: metrics, logs, configs, and confusion matrices are committed
+# as evidence for the README; checkpoints (*.pt above) are not.
 
 # Caches
 .cache/
