@@ -22,17 +22,7 @@ Each clip follows one path from audio to a class prediction.
 4. **CNN.** A convolutional network reads the spectrogram as a single-channel image and outputs a score for each class.
 5. **Prediction.** Softmax turns those scores into confidences. The demo shows the top-k classes. Grad-CAM highlights the time–frequency regions that contributed most to the chosen class.
 
-```mermaid
-flowchart LR
-    audio[Audio clip] --> resample[Resample]
-    resample --> stft[STFT]
-    stft --> mel[Mel filterbank]
-    mel --> logmel[Log-mel spectrogram]
-    logmel --> cnn[CNN]
-    cnn --> pred[Top-k classes]
-    logmel --> gradcam[Grad-CAM overlay]
-    cnn --> gradcam
-```
+![AudioScope pipeline](docs/pipeline.svg)
 
 Training follows the same front end. A small CNN is the baseline. Later runs add spectrogram and waveform augmentation, then compare transfer from an ImageNet-pretrained network and from pretrained audio models. The full training plan is in [plan.md](plan.md).
 
@@ -73,12 +63,15 @@ Metric computation is planned around standard classification scores (accuracy, m
 
 ## Planned project structure
 
-The tree below is the layout the implementation will follow. Only `README.md` and `plan.md` exist today.
+The tree below is the layout the implementation will follow. The repository currently contains this README, [plan.md](plan.md), and the pipeline figure in `docs/`. The rest of the tree is not created yet.
 
 ```text
 AudioScope/
 ├── README.md
 ├── plan.md
+├── docs/
+│   ├── pipeline.svg         # static pipeline figure
+│   └── pipeline.png
 ├── configs/                 # one YAML file per experiment
 ├── data/                    # local datasets (not committed)
 ├── notebooks/               # exploration of folds and spectrograms

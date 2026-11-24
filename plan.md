@@ -205,6 +205,9 @@ Grad-CAM (Selvaraju et al., 2017) is computed on a convolutional feature map of 
 AudioScope/
 ├── README.md                  # public summary; results only from eval runs
 ├── plan.md                    # this plan
+├── docs/
+│   ├── pipeline.svg           # static pipeline figure
+│   └── pipeline.png
 ├── configs/                   # baseline.yaml, augment-*.yaml, transfer-*.yaml
 ├── data/                      # ESC-50 and optional UrbanSound8K (gitignored)
 ├── notebooks/                 # fold checks, spectrogram exploration
