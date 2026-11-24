@@ -1,0 +1,44 @@
+dataset:
+  name: esc50
+  root: data/esc50
+features:
+  sample_rate: 22050
+  clip_seconds: 5.0
+  n_fft: 1024
+  hop_length: 512
+  n_mels: 64
+  f_min: 0.0
+  f_max: null
+  mel_scale: slaney
+  mel_norm: slaney
+  log: natural
+  log_offset: 1.0e-06
+  kind: logmel
+  normalize: per_band
+model:
+  name: baseline_cnn
+  channels:
+  - 32
+  - 64
+  - 128
+  - 256
+  convs_per_block: 1
+  dropout: 0.3
+  gradcam_layer: blocks.3.body
+augment:
+  specaugment: true
+  freq_mask_param: 8
+  time_mask_param: 24
+  num_freq_masks: 2
+  num_time_masks: 2
+train:
+  seed: 0
+  epochs: 60
+  batch_size: 32
+  lr: 0.001
+  weight_decay: 0.01
+  warmup_epochs: 2
+  val_fraction: 0.1
+  early_stopping_patience: null
+name: baseline
+config_path: configs/augment-specaugment.yaml

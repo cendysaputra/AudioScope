@@ -81,7 +81,7 @@ AudioScope/
 │   ├── inference.py         # load a checkpoint and score audio with its own front end
 │   └── viz.py               # waveform / spectrogram figures in seconds and hertz
 ├── eval/                    # crossval.py, feature_check.py, results_table.py
-│   └── runs/                # one directory per run (not committed)
+│   └── runs/                # one directory per run (checkpoints not committed)
 ├── app/streamlit_app.py     # Streamlit demo
 └── tests/
 ```
@@ -142,6 +142,10 @@ All AudioScope numbers below come from `eval/runs/<run-id>/metrics.json`, writte
 <!-- results-table:start -->
 | Run | Config | Model | Accuracy % (mean ± std) | Macro F1 % (mean ± std) | Folds | Git |
 | --- | --- | --- | --- | --- | --- | --- |
+| `augment-mixup-v1` | `configs/augment-mixup.yaml` | baseline_cnn | 77.0 ± 2.5 | 76.1 ± 2.8 | 5 | `11d685f` |
+| `augment-noise-v1` | `configs/augment-noise.yaml` | baseline_cnn | 78.1 ± 2.8 | 77.5 ± 2.8 | 5 | `11d685f` |
+| `augment-specaugment-v1` | `configs/augment-specaugment.yaml` | baseline_cnn | 76.5 ± 0.9 | 75.7 ± 1.3 | 5 | `11d685f` |
+| `augment-timeshift-v1` | `configs/augment-timeshift.yaml` | baseline_cnn | 76.4 ± 2.2 | 75.7 ± 2.3 | 5 | `11d685f` |
 | `baseline-v1` | `configs/baseline.yaml` | baseline_cnn | 77.2 ± 1.8 | 76.5 ± 1.9 | 5 | `7a9ff64` |
 <!-- results-table:end -->
 
@@ -150,6 +154,21 @@ Hardware for these runs: 4 CPU cores, no GPU (see each run's `environment.txt`).
 ### Baseline
 
 `baseline-v1` is the Stage 1 CNN: four conv–BN–ReLU–max-pool blocks (32/64/128/256 channels, 0.40M parameters) on 64-band log-mel spectrograms at 22.05 kHz, 60 epochs of AdamW with the checkpoint chosen on a validation split from the training folds. Per-fold test accuracy ranged from 75.5% (fold 3) to 80.25% (fold 4). The weakest classes, by per-class accuracy averaged over folds, were helicopter (25%), washing machine (47.5%), airplane (52.5%), and water drops (55%); the confusion matrix is in [`eval/runs/baseline-v1/confusion_matrix.png`](eval/runs/baseline-v1/confusion_matrix.png).
+
+### Augmentation (Stage 2)
+
+Each `augment-*-v1` run is the baseline config with one training-time augmentation switched on and nothing else changed: same model, front end, 60-epoch budget, seeds, and folds. Augmentation strengths were set once from common defaults and not tuned.
+
+Because every run uses the same five test folds, the useful comparison is the per-fold difference from `baseline-v1` (accuracy, percentage points):
+
+| Run | Fold 1 | Fold 2 | Fold 3 | Fold 4 | Fold 5 | Mean diff | Folds better |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| SpecAugment (2 freq + 2 time masks) | -0.75 | -1.25 | +1.00 | -2.25 | -0.50 | -0.75 | 1 / 5 |
+| mixup (alpha 0.2) | +0.50 | -2.00 | +2.00 | +0.50 | -2.00 | -0.20 | 3 / 5 |
+| time shift (up to 0.5 of the clip) | 0.00 | -4.25 | +2.00 | -2.75 | +1.00 | -0.80 | 2 / 5 |
+| additive noise (SNR 10–40 dB, p = 0.5) | +1.25 | -2.25 | +2.25 | +2.00 | +1.25 | +0.90 | 4 / 5 |
+
+None of the four separate augmentations moves mean accuracy by more than its fold-to-fold spread. Additive noise is the only one ahead on most folds (+0.9 points on average, 4 of 5 folds), which is a weak signal from five folds, not an established gain. Noise helped the classes the baseline found hardest least uniformly: airplane went from 52.5% to 70% and water drops from 55% to 62.5%, while helicopter stayed at 25%. A likely reason the spectrogram augmentations did not help is the fixed 60-epoch budget, which was chosen for the unaugmented baseline; that is untested here.
 
 ### External reference points (not AudioScope measurements)
 
