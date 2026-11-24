@@ -10,7 +10,7 @@ The work sits next to two other projects by the same author: [VisionClassify](ht
 
 The primary dataset is [ESC-50](https://github.com/karolpiczak/ESC-50). An optional second dataset is [UrbanSound8K](https://urbansounddataset.weebly.com/urbansound8k.html).
 
-**Status.** This repository is at the planning stage. It contains this README and the project plan. Training code, a trained model, and the demo app are still to be built. See [PLAN.md](PLAN.md).
+**Status.** The pipeline, the evaluation harness, and the Streamlit demo are implemented. The 5-fold evaluation runs are in progress; [Results](#results) will list only numbers from run directories written by `eval/crossval.py`. Task status and the evaluation rules are in [PLAN.md](PLAN.md).
 
 ## How it works
 
@@ -28,8 +28,6 @@ Training follows the same front end. A small CNN is the baseline. Later runs add
 
 ## Features
 
-Planned behavior of the project:
-
 - Build STFT and log-mel spectrograms with torchaudio, with MFCCs available as an optional feature.
 - Train a small CNN, then the same model with augmentation, then a transfer-learning comparison.
 - Evaluate with ESC-50's official 5-fold cross-validation and report mean and standard deviation across folds.
@@ -38,7 +36,7 @@ Planned behavior of the project:
 
 ## Datasets
 
-Audio files are downloaded locally and are not part of this repository. Each dataset keeps its own license. The MIT license planned for this code does not cover the recordings.
+Audio files are downloaded locally and are not part of this repository. Each dataset keeps its own license. The MIT license of this code does not cover the recordings.
 
 ### ESC-50 (primary)
 
@@ -54,45 +52,45 @@ Audio files are downloaded locally and are not part of this repository. Each dat
 | --- | --- |
 | Python | Language for training, evaluation, and the demo |
 | PyTorch | Models, loss, and the training loop |
-| torchaudio | Loading, resampling, STFT, and mel spectrograms |
-| librosa | Spectrogram figures and a reference check against torchaudio |
+| torchaudio | Resampling, STFT, and mel spectrograms |
+| soundfile | Reading WAV/FLAC/OGG/MP3 (librosa as fallback decoder) |
+| librosa | Reference check against torchaudio, mel-band center frequencies |
 | matplotlib | Saved figures for waveforms, spectrograms, and confusion matrices |
 | Streamlit | Upload, record, visualize, and predict in the browser |
 
-Metric computation is planned around standard classification scores (accuracy, macro F1, confusion matrix). Exact package versions will be recorded with each evaluation run.
+Accuracy, macro F1, per-class accuracy, and confusion matrices are computed in `src/audioscope/eval/metrics.py` (checked against scikit-learn in the tests). Each run saves its package versions in `environment.txt`.
 
-## Planned project structure
-
-The tree below is the layout the implementation will follow. The repository currently contains this README, [PLAN.md](PLAN.md), and the pipeline figure in `docs/`. The rest of the tree is not created yet.
+## Project structure
 
 ```text
 AudioScope/
 ├── README.md
 ├── PLAN.md
-├── docs/
-│   ├── pipeline.svg         # static pipeline figure
-│   └── pipeline.png
-├── configs/                 # one YAML file per experiment
-├── data/                    # local datasets (not committed)
-├── notebooks/               # exploration of folds and spectrograms
+├── LICENSE
+├── pyproject.toml
+├── docs/                    # pipeline figure
+├── configs/                 # one YAML file per experiment (baseline, augment-*, transfer-*)
+├── data/                    # local datasets and pretrained weights (not committed)
+├── notebooks/               # 01 folds + spectrograms, 02 torchaudio-vs-librosa check
 ├── src/audioscope/
-│   ├── data/                # download, fold splits, datasets
-│   ├── features/            # resample, STFT, log-mel, MFCC
-│   ├── models/              # baseline CNN and transfer backbones
+│   ├── data/                # download, metadata, official folds, cached waveforms
+│   ├── features/            # loading, resampling, log-mel, MFCC, normalization
+│   ├── models/              # baseline CNN, ImageNet ResNet, PANNs Cnn14, Grad-CAM
 │   ├── train/               # training loop and augmentation
-│   └── eval/                # metric functions used by scripts
-├── eval/                    # scripts that write logs and metrics JSON
-├── app/                     # Streamlit demo
+│   ├── eval/                # metrics, reports, cross-validation driver
+│   ├── inference.py         # load a checkpoint and score audio with its own front end
+│   └── viz.py               # waveform / spectrogram figures in seconds and hertz
+├── eval/                    # crossval.py, feature_check.py, results_table.py
+│   └── runs/                # one directory per run (not committed)
+├── app/streamlit_app.py     # Streamlit demo
 └── tests/
 ```
 
-`src/audioscope/` is the library. `eval/` holds the scripts that produce the numbers this README is allowed to quote. A score without a matching run in `eval/` does not get written up.
+`src/audioscope/` is the library. `eval/` holds the scripts that produce the numbers this README is allowed to quote. A score without a matching run in `eval/runs/` does not get written up.
 
 ## Getting started
 
-**Planned / work in progress.** Nothing below can be run yet. There is no package, downloader, trainer, evaluator, or Streamlit app in the tree. The commands are the interface those pieces will have, written down so the later implementation has a fixed shape.
-
-### 1. Install (planned)
+### 1. Install
 
 ```bash
 python -m venv .venv
@@ -100,39 +98,42 @@ source .venv/bin/activate
 pip install -e ".[app,dev]"
 ```
 
-### 2. Download the data (planned)
+### 2. Download the data
 
 ```bash
 python -m audioscope.data.download --dataset esc50 --dest data/esc50
+python -m audioscope.data.download --weights resnet18 cnn14   # only for the transfer-learning configs
 ```
 
-The same clips can be downloaded from the [official ESC-50 repository](https://github.com/karolpiczak/ESC-50). Keep them under `data/` and leave them out of git.
+The ESC-50 clips can also be taken from the [official repository](https://github.com/karolpiczak/ESC-50). Keep them under `data/` and out of git.
 
-### 3. Train (planned)
+### 3. Evaluate with 5-fold cross-validation
 
 ```bash
-python -m audioscope.train --config configs/baseline.yaml
+python eval/crossval.py --config configs/baseline.yaml --out eval/runs/baseline-v1
 ```
 
-Later configs will cover augmentation and transfer learning. Every run records its config and the code revision.
-
-### 4. Evaluate (planned)
+For each official fold the script trains on the other four (with a validation split taken from them), selects the checkpoint on that validation split, and scores the held-out fold once. It writes `config.yaml`, `train.log`, `environment.txt`, `metrics.json` (per-fold and mean ± std accuracy and macro F1, per-class accuracy, git revision), confusion matrices as CSV and PNG, `predictions.csv`, and one checkpoint per fold. A run is marked `"reportable": true` only if it covers every fold from a clean git tree.
 
 ```bash
-python -m audioscope.eval.crossval \
-  --config configs/baseline.yaml \
-  --out eval/runs/<run-id>
+python eval/results_table.py          # Markdown table of reportable runs
+python eval/feature_check.py --n 64   # torchaudio vs librosa tolerance check
+pytest                                # folds, features, augmentation, models, a tiny overfit
 ```
 
-The script trains or loads one model per official fold, writes a log, and writes `metrics.json` with per-fold scores, the mean, and the standard deviation. Hyperparameters are chosen on the training folds only.
+To train a single checkpoint (for the demo) without scoring its held-out fold:
 
-### 5. Run the Streamlit app (planned)
+```bash
+python -m audioscope.train --config configs/baseline.yaml --holdout-fold 1 --out checkpoints/baseline.pt
+```
+
+### 4. Run the Streamlit app
 
 ```bash
 streamlit run app/streamlit_app.py
 ```
 
-The app will load a saved checkpoint and the config that belongs to it. Until a checkpoint exists, the planned app still draws the waveform and the spectrogram and states that there is no model to score the clip.
+The app lists checkpoints under `eval/runs/*/fold*/model.pt` and `checkpoints/*.pt` and rebuilds the front end from the config saved in the selected checkpoint. It accepts an upload (WAV, FLAC, OGG, MP3) or a microphone recording and shows the waveform, the log-mel spectrogram with mel-band center frequencies on the y axis, the top-k classes, and a Grad-CAM overlay. Without a checkpoint it still draws the waveform and spectrogram and says that predictions need a trained model. Checkpoints are not committed; create one with step 3.
 
 ## Results
 
@@ -159,4 +160,4 @@ The work is sequenced so that a reproducible baseline exists before augmentation
 
 ## License
 
-The code in this repository is planned for release under the MIT License. A `LICENSE` file will be added with the first code commit. Dataset recordings stay under the licenses of their publishers and are not redistributed here.
+The code is released under the [MIT License](LICENSE). Dataset recordings stay under the licenses of their publishers (ESC-50: CC BY-NC) and are not redistributed here. Pretrained weights keep their own licenses: torchvision ResNet-18 (BSD-3-Clause) and PANNs Cnn14 (CC BY 4.0, Zenodo record 3987831).
