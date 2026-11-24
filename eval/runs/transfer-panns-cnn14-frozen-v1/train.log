@@ -1,0 +1,91 @@
+2026-11-24 21:13:45 INFO run transfer-panns-cnn14-frozen-v1  config configs/transfer-panns-cnn14-frozen.yaml  git 39fa17855c60c6fbc14bb31ab138cb89e45d686a
+2026-11-24 21:13:45 INFO dataset esc50: 2000 clips, 50 classes, folds [1, 2, 3, 4, 5]
+2026-11-24 21:13:47 INFO cached 500/2000 clips
+2026-11-24 21:13:49 INFO cached 1000/2000 clips
+2026-11-24 21:13:50 INFO cached 1500/2000 clips
+2026-11-24 21:13:52 INFO cached 2000/2000 clips
+2026-11-24 21:13:53 INFO fold 1: train=1420 val=180 test=400 (seed 1)
+2026-11-24 21:14:00 INFO model panns_cnn14: 79.78M parameters
+2026-11-24 21:14:00 INFO pretrained weights: data/pretrained/Cnn14_mAP=0.431.pth
+2026-11-24 21:14:01 INFO embedded 16/2000 clips (2s)
+2026-11-24 21:14:44 INFO embedded 416/2000 clips (45s)
+2026-11-24 21:15:27 INFO embedded 816/2000 clips (88s)
+2026-11-24 21:16:09 INFO embedded 1216/2000 clips (130s)
+2026-11-24 21:16:52 INFO embedded 1616/2000 clips (172s)
+2026-11-24 21:17:33 INFO fold 1 head epoch  10  loss 0.4551  acc 0.961  val_acc 0.933
+2026-11-24 21:17:34 INFO fold 1 head epoch  20  loss 0.2440  acc 0.975  val_acc 0.944
+2026-11-24 21:17:35 INFO fold 1 head epoch  30  loss 0.1735  acc 0.985  val_acc 0.939
+2026-11-24 21:17:35 INFO fold 1 head epoch  40  loss 0.1422  acc 0.989  val_acc 0.944
+2026-11-24 21:17:36 INFO fold 1 head epoch  50  loss 0.1198  acc 0.992  val_acc 0.939
+2026-11-24 21:17:36 INFO fold 1 head epoch  60  loss 0.1143  acc 0.992  val_acc 0.944
+2026-11-24 21:17:37 INFO fold 1 head epoch  70  loss 0.1036  acc 0.994  val_acc 0.956
+2026-11-24 21:17:37 INFO fold 1 head epoch  80  loss 0.0974  acc 0.994  val_acc 0.950
+2026-11-24 21:17:38 INFO fold 1 head epoch  90  loss 0.0959  acc 0.994  val_acc 0.944
+2026-11-24 21:17:39 INFO fold 1 head epoch 100  loss 0.0914  acc 0.994  val_acc 0.944
+2026-11-24 21:17:39 INFO fold 1: selected head epoch 70 (val_acc 0.9556)
+2026-11-24 21:17:39 INFO fold 1 TEST accuracy 0.9200  macro_f1 0.9166
+2026-11-24 21:17:39 INFO fold 2: train=1429 val=171 test=400 (seed 2)
+2026-11-24 21:17:46 INFO model panns_cnn14: 79.78M parameters
+2026-11-24 21:17:46 INFO pretrained weights: data/pretrained/Cnn14_mAP=0.431.pth
+2026-11-24 21:17:46 INFO loading cached embeddings data/cache/emb_esc50_1f67c9a86003.pt
+2026-11-24 21:17:47 INFO fold 2 head epoch  10  loss 0.4496  acc 0.956  val_acc 0.895
+2026-11-24 21:17:47 INFO fold 2 head epoch  20  loss 0.2370  acc 0.977  val_acc 0.889
+2026-11-24 21:17:48 INFO fold 2 head epoch  30  loss 0.1797  acc 0.983  val_acc 0.889
+2026-11-24 21:17:48 INFO fold 2 head epoch  40  loss 0.1459  acc 0.987  val_acc 0.883
+2026-11-24 21:17:49 INFO fold 2 head epoch  50  loss 0.1160  acc 0.988  val_acc 0.883
+2026-11-24 21:17:50 INFO fold 2 head epoch  60  loss 0.1067  acc 0.990  val_acc 0.883
+2026-11-24 21:17:50 INFO fold 2 head epoch  70  loss 0.0999  acc 0.991  val_acc 0.895
+2026-11-24 21:17:51 INFO fold 2 head epoch  80  loss 0.1018  acc 0.990  val_acc 0.883
+2026-11-24 21:17:51 INFO fold 2 head epoch  90  loss 0.0990  acc 0.990  val_acc 0.889
+2026-11-24 21:17:52 INFO fold 2 head epoch 100  loss 0.0976  acc 0.990  val_acc 0.889
+2026-11-24 21:17:52 INFO fold 2: selected head epoch 5 (val_acc 0.9123)
+2026-11-24 21:17:52 INFO fold 2 TEST accuracy 0.9125  macro_f1 0.9074
+2026-11-24 21:17:52 INFO fold 3: train=1431 val=169 test=400 (seed 3)
+2026-11-24 21:17:59 INFO model panns_cnn14: 79.78M parameters
+2026-11-24 21:17:59 INFO pretrained weights: data/pretrained/Cnn14_mAP=0.431.pth
+2026-11-24 21:17:59 INFO loading cached embeddings data/cache/emb_esc50_1f67c9a86003.pt
+2026-11-24 21:18:00 INFO fold 3 head epoch  10  loss 0.4300  acc 0.966  val_acc 0.923
+2026-11-24 21:18:00 INFO fold 3 head epoch  20  loss 0.2139  acc 0.981  val_acc 0.935
+2026-11-24 21:18:01 INFO fold 3 head epoch  30  loss 0.1592  acc 0.985  val_acc 0.935
+2026-11-24 21:18:02 INFO fold 3 head epoch  40  loss 0.1251  acc 0.990  val_acc 0.941
+2026-11-24 21:18:02 INFO fold 3 head epoch  50  loss 0.1130  acc 0.992  val_acc 0.935
+2026-11-24 21:18:03 INFO fold 3 head epoch  60  loss 0.0974  acc 0.995  val_acc 0.935
+2026-11-24 21:18:03 INFO fold 3 head epoch  70  loss 0.0911  acc 0.995  val_acc 0.935
+2026-11-24 21:18:04 INFO fold 3 head epoch  80  loss 0.0813  acc 0.995  val_acc 0.935
+2026-11-24 21:18:04 INFO fold 3 head epoch  90  loss 0.0863  acc 0.995  val_acc 0.935
+2026-11-24 21:18:05 INFO fold 3 head epoch 100  loss 0.0808  acc 0.995  val_acc 0.935
+2026-11-24 21:18:05 INFO fold 3: selected head epoch 55 (val_acc 0.9408)
+2026-11-24 21:18:05 INFO fold 3 TEST accuracy 0.9075  macro_f1 0.9069
+2026-11-24 21:18:05 INFO fold 4: train=1439 val=161 test=400 (seed 4)
+2026-11-24 21:18:11 INFO model panns_cnn14: 79.78M parameters
+2026-11-24 21:18:11 INFO pretrained weights: data/pretrained/Cnn14_mAP=0.431.pth
+2026-11-24 21:18:11 INFO loading cached embeddings data/cache/emb_esc50_1f67c9a86003.pt
+2026-11-24 21:18:12 INFO fold 4 head epoch  10  loss 0.4430  acc 0.962  val_acc 0.863
+2026-11-24 21:18:12 INFO fold 4 head epoch  20  loss 0.2320  acc 0.976  val_acc 0.876
+2026-11-24 21:18:13 INFO fold 4 head epoch  30  loss 0.1641  acc 0.983  val_acc 0.863
+2026-11-24 21:18:13 INFO fold 4 head epoch  40  loss 0.1339  acc 0.987  val_acc 0.870
+2026-11-24 21:18:14 INFO fold 4 head epoch  50  loss 0.1180  acc 0.989  val_acc 0.870
+2026-11-24 21:18:14 INFO fold 4 head epoch  60  loss 0.1059  acc 0.991  val_acc 0.876
+2026-11-24 21:18:15 INFO fold 4 head epoch  70  loss 0.1006  acc 0.991  val_acc 0.870
+2026-11-24 21:18:15 INFO fold 4 head epoch  80  loss 0.0916  acc 0.992  val_acc 0.876
+2026-11-24 21:18:16 INFO fold 4 head epoch  90  loss 0.0936  acc 0.992  val_acc 0.876
+2026-11-24 21:18:16 INFO fold 4 head epoch 100  loss 0.0850  acc 0.992  val_acc 0.876
+2026-11-24 21:18:16 INFO fold 4: selected head epoch 43 (val_acc 0.8820)
+2026-11-24 21:18:17 INFO fold 4 TEST accuracy 0.9525  macro_f1 0.9529
+2026-11-24 21:18:17 INFO fold 5: train=1421 val=179 test=400 (seed 5)
+2026-11-24 21:18:23 INFO model panns_cnn14: 79.78M parameters
+2026-11-24 21:18:23 INFO pretrained weights: data/pretrained/Cnn14_mAP=0.431.pth
+2026-11-24 21:18:23 INFO loading cached embeddings data/cache/emb_esc50_1f67c9a86003.pt
+2026-11-24 21:18:24 INFO fold 5 head epoch  10  loss 0.4497  acc 0.963  val_acc 0.933
+2026-11-24 21:18:25 INFO fold 5 head epoch  20  loss 0.2420  acc 0.977  val_acc 0.927
+2026-11-24 21:18:25 INFO fold 5 head epoch  30  loss 0.1702  acc 0.985  val_acc 0.950
+2026-11-24 21:18:26 INFO fold 5 head epoch  40  loss 0.1330  acc 0.985  val_acc 0.944
+2026-11-24 21:18:26 INFO fold 5 head epoch  50  loss 0.1208  acc 0.988  val_acc 0.944
+2026-11-24 21:18:27 INFO fold 5 head epoch  60  loss 0.1088  acc 0.991  val_acc 0.944
+2026-11-24 21:18:28 INFO fold 5 head epoch  70  loss 0.1001  acc 0.992  val_acc 0.944
+2026-11-24 21:18:28 INFO fold 5 head epoch  80  loss 0.0984  acc 0.992  val_acc 0.944
+2026-11-24 21:18:29 INFO fold 5 head epoch  90  loss 0.0944  acc 0.992  val_acc 0.933
+2026-11-24 21:18:29 INFO fold 5 head epoch 100  loss 0.0971  acc 0.992  val_acc 0.933
+2026-11-24 21:18:29 INFO fold 5: selected head epoch 64 (val_acc 0.9497)
+2026-11-24 21:18:30 INFO fold 5 TEST accuracy 0.9075  macro_f1 0.9057
+2026-11-24 21:18:31 INFO DONE transfer-panns-cnn14-frozen-v1: accuracy 0.9200 ± 0.0189  macro_f1 0.9179 ± 0.0200 over folds [1, 2, 3, 4, 5] (complete=True)

@@ -142,11 +142,13 @@ All AudioScope numbers below come from `eval/runs/<run-id>/metrics.json`, writte
 <!-- results-table:start -->
 | Run | Config | Model | Accuracy % (mean ± std) | Macro F1 % (mean ± std) | Folds | Git |
 | --- | --- | --- | --- | --- | --- | --- |
+| `augment-combined-v1` | `configs/augment-combined.yaml` | baseline_cnn | 75.4 ± 2.2 | 74.6 ± 2.7 | 5 | `1cd0d0b` |
 | `augment-mixup-v1` | `configs/augment-mixup.yaml` | baseline_cnn | 77.0 ± 2.5 | 76.1 ± 2.8 | 5 | `11d685f` |
 | `augment-noise-v1` | `configs/augment-noise.yaml` | baseline_cnn | 78.1 ± 2.8 | 77.5 ± 2.8 | 5 | `11d685f` |
 | `augment-specaugment-v1` | `configs/augment-specaugment.yaml` | baseline_cnn | 76.5 ± 0.9 | 75.7 ± 1.3 | 5 | `11d685f` |
 | `augment-timeshift-v1` | `configs/augment-timeshift.yaml` | baseline_cnn | 76.4 ± 2.2 | 75.7 ± 2.3 | 5 | `11d685f` |
 | `baseline-v1` | `configs/baseline.yaml` | baseline_cnn | 77.2 ± 1.8 | 76.5 ± 1.9 | 5 | `7a9ff64` |
+| `transfer-panns-cnn14-frozen-v1` | `configs/transfer-panns-cnn14-frozen.yaml` | panns_cnn14 | 92.0 ± 1.9 | 91.8 ± 2.0 | 5 | `39fa178` |
 <!-- results-table:end -->
 
 Hardware for these runs: 4 CPU cores, no GPU (see each run's `environment.txt`).
@@ -167,8 +169,13 @@ Because every run uses the same five test folds, the useful comparison is the pe
 | mixup (alpha 0.2) | +0.50 | -2.00 | +2.00 | +0.50 | -2.00 | -0.20 | 3 / 5 |
 | time shift (up to 0.5 of the clip) | 0.00 | -4.25 | +2.00 | -2.75 | +1.00 | -0.80 | 2 / 5 |
 | additive noise (SNR 10–40 dB, p = 0.5) | +1.25 | -2.25 | +2.25 | +2.00 | +1.25 | +0.90 | 4 / 5 |
+| all four combined (`augment-combined-v1`) | -2.50 | -2.00 | 0.00 | -1.25 | -3.75 | -1.90 | 0 / 5 |
 
-None of the four separate augmentations moves mean accuracy by more than its fold-to-fold spread. Additive noise is the only one ahead on most folds (+0.9 points on average, 4 of 5 folds), which is a weak signal from five folds, not an established gain. Noise helped the classes the baseline found hardest least uniformly: airplane went from 52.5% to 70% and water drops from 55% to 62.5%, while helicopter stayed at 25%. A likely reason the spectrogram augmentations did not help is the fixed 60-epoch budget, which was chosen for the unaugmented baseline; that is untested here.
+None of the four separate augmentations moves mean accuracy by more than its fold-to-fold spread. Additive noise is the only one ahead on most folds (+0.9 points on average, 4 of 5 folds), which is a weak signal from five folds, not an established gain. Stacking all four was worse than the baseline on every fold but one tie (-1.9 points on average), so the combination is not used further. On the classes the baseline found hardest, noise raised airplane from 52.5% to 70% and water drops from 55% to 62.5%; helicopter stayed at 25%. A likely reason the spectrogram augmentations did not help is the fixed 60-epoch budget, which was chosen for the unaugmented baseline; that is untested here.
+
+### Transfer learning (Stage 3)
+
+`transfer-panns-cnn14-frozen-v1` uses PANNs Cnn14 (Kong et al., 2020, "PANNs: Large-Scale Pretrained Audio Neural Networks for Audio Pattern Recognition"; checkpoint `Cnn14_mAP=0.431.pth`, pretrained on AudioSet) as a **frozen** feature extractor: each clip runs once through the trunk at 32 kHz with Cnn14's own front end, and only a new 2048 → 50 linear head is trained on the cached embeddings. It reached 92.0 ± 1.9% accuracy, between 14.0 and 15.25 points above `baseline-v1` on every fold. Its weakest classes were helicopter (57.5%), washing machine (70%), and airplane (72.5%), the same three the baseline struggled with, at much higher levels. This is a linear probe, not fine-tuning: full fine-tuning of the 80M-parameter model (`configs/transfer-panns-cnn14.yaml`) is a GPU job and was not run. Whether any ESC-50 recordings also appear in AudioSet was not checked.
 
 ### External reference points (not AudioScope measurements)
 
