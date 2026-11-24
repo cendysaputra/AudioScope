@@ -42,6 +42,7 @@ class Cnn14Classifier(nn.Module):
         dropout: float = 0.5,
     ):
         super().__init__()
+        self._backbone_frozen = False
         self.bn0 = nn.BatchNorm2d(n_mels)
         widths = [1, 64, 128, 256, 512, 1024, 2048]
         for i in range(6):
@@ -68,22 +69,38 @@ class Cnn14Classifier(nn.Module):
         return self.head.parameters()
 
     def set_backbone_trainable(self, trainable: bool) -> None:
+        self._backbone_frozen = not trainable
         for name, p in self.named_parameters():
             if not name.startswith("head."):
                 p.requires_grad = trainable
+        self.train(self.training)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def train(self, mode: bool = True):
+        super().train(mode)
+        if self._backbone_frozen:
+            # Frozen trunk: pretrained BatchNorm statistics, no trunk dropout.
+            for name, m in self.named_modules():
+                if name and not name.startswith("head"):
+                    m.eval()
+        return self
+
+    def embed(self, x: torch.Tensor) -> torch.Tensor:
+        """2048-d clip embedding (ReLU(fc1)), the PANNs embedding layer."""
         # x: (B, 1, n_mels, frames) -> Cnn14 layout (B, 1, frames, n_mels)
         x = x.transpose(2, 3)
         x = self.bn0(x.transpose(1, 3)).transpose(1, 3)
-        p = 0.2 if self.training else 0.0
+        trunk_training = self.training and not self._backbone_frozen
+        p = 0.2 if trunk_training else 0.0
         for i in range(1, 7):
             pool = (2, 2) if i < 6 else (1, 1)
             x = getattr(self, f"conv_block{i}")(x, pool=pool)
-            x = F.dropout(x, p=p, training=self.training)
+            x = F.dropout(x, p=p, training=trunk_training)
         x = x.mean(dim=3)  # over mel
         x = x.max(dim=2).values + x.mean(dim=2)  # over time
-        x = F.dropout(x, p=self.dropout, training=self.training)
-        x = F.relu_(self.fc1(x))
+        x = F.dropout(x, p=self.dropout, training=trunk_training)
+        return F.relu_(self.fc1(x))
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = self.embed(x)
         x = F.dropout(x, p=self.dropout, training=self.training)
         return self.head(x)

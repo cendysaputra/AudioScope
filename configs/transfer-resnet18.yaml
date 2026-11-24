@@ -1,13 +1,14 @@
 # Stage 3: ImageNet ResNet-18 fine-tuned on log-mel spectrograms.
 # The spectrogram is repeated to 3 channels and resized to 224x224.
-# Needs the torchvision ImageNet weights (downloaded on first use, or set
-# model.weights_path to a local resnet18-f37072fd.pth). License: BSD-3 (torchvision).
+# Weights: torchvision ResNet18_Weights.IMAGENET1K_V1 (resnet18-f37072fd.pth),
+# fetched with `python -m audioscope.data.download --weights resnet18`.
+# Set weights_path: null to let torchvision download them instead.
 base: baseline.yaml
 model:
   name: resnet
   arch: resnet18
   pretrained: imagenet
-  weights_path: null
+  weights_path: data/pretrained/resnet18-f37072fd.pth
   input_size: [224, 224]
   dropout: 0.2
   imagenet_norm: false

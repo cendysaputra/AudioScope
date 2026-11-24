@@ -6,6 +6,10 @@ Tries a shallow ``git clone`` of the official repository first, then the
 GitHub zip archive. The recordings are CC BY-NC (see the dataset's LICENSE);
 they are kept under ``data/`` and never committed.
 
+Pretrained weights for Stage 3 go to ``data/pretrained``:
+
+    python -m audioscope.data.download --weights resnet18 cnn14
+
 UrbanSound8K requires accepting its terms on the dataset page; unpack it to
 ``data/urbansound8k`` by hand (``metadata/`` and ``audio/fold1..10``).
 """
@@ -63,12 +67,40 @@ def download_esc50(dest: str | Path = "data/esc50", method: str = "auto") -> Pat
     raise RuntimeError("ESC-50 download failed: " + "; ".join(errors))
 
 
+WEIGHTS = {
+    # torchvision ResNet18_Weights.IMAGENET1K_V1 (BSD-3-Clause, torchvision)
+    "resnet18": ("https://download.pytorch.org/models/resnet18-f37072fd.pth", "resnet18-f37072fd.pth"),
+    # PANNs Cnn14, AudioSet mAP 0.431 (Zenodo record 3987831, CC BY 4.0)
+    "cnn14": ("https://zenodo.org/record/3987831/files/Cnn14_mAP%3D0.431.pth?download=1", "Cnn14_mAP=0.431.pth"),
+}
+
+
+def download_weights(name: str, dest: str | Path = "data/pretrained") -> Path:
+    url, fname = WEIGHTS[name]
+    path = Path(dest) / fname
+    if path.exists():
+        print(f"{name}: already at {path}")
+        return path
+    path.parent.mkdir(parents=True, exist_ok=True)
+    print(f"{name}: downloading {url}")
+    tmp = path.with_suffix(".part")
+    urllib.request.urlretrieve(url, tmp)
+    tmp.rename(path)
+    return path
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--dataset", default="esc50", choices=["esc50"])
     ap.add_argument("--dest", default="data/esc50")
     ap.add_argument("--method", default="auto", choices=["auto", "git", "zip"])
+    ap.add_argument("--weights", nargs="*", choices=sorted(WEIGHTS), help="download pretrained weights instead")
+    ap.add_argument("--weights-dest", default="data/pretrained")
     args = ap.parse_args()
+    if args.weights:
+        for name in args.weights:
+            print(f"{name} ready at {download_weights(name, args.weights_dest)}")
+        return
     path = download_esc50(args.dest, args.method)
     print(f"ESC-50 ready at {path}")
 

@@ -64,7 +64,7 @@ def run_crossval(
     preds_rows = []
     t0 = time.time()
     for k in folds:
-        res = train_fold(cfg, catalog, waves, k, dev, logger, run_id=run_id)
+        res = train_fold(cfg, catalog, waves, k, dev, logger, run_id=run_id, cache_dir=cache_dir)
         y_pred = res.test_logits.argmax(axis=1)
         m = fold_metrics(res.test_targets, y_pred, catalog.num_classes)
         cm = m.pop("confusion_matrix")

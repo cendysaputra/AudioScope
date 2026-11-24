@@ -1,0 +1,14 @@
+# Stage 3: PANNs Cnn14 (AudioSet) as a frozen feature extractor + a new linear head.
+# The trunk runs once per clip in eval mode (pretrained BatchNorm statistics,
+# no augmentation); only the 2048 -> 50 head is trained, on cached embeddings.
+base: transfer-panns-cnn14.yaml
+augment:
+  specaugment: false
+train:
+  mode: frozen_embeddings
+  epochs: 100
+  batch_size: 64
+  lr: 1.0e-3
+  weight_decay: 1.0e-2
+  warmup_epochs: 2
+  freeze_backbone_epochs: 0

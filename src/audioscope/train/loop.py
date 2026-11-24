@@ -37,6 +37,7 @@ TRAIN_DEFAULTS = {
     "early_stopping_patience": None,
     "freeze_backbone_epochs": 0,
     "label_smoothing": 0.0,
+    "mode": "finetune",  # or "frozen_embeddings": train only the head on cached trunk embeddings
 }
 
 
@@ -106,6 +107,7 @@ def train_fold(
     logger,
     run_id: str | None = None,
     evaluate_test: bool = True,
+    cache_dir: str | Path | None = "data/cache",
 ) -> FoldResult:
     tcfg = {**TRAIN_DEFAULTS, **cfg.get("train", {})}
     fcfg = FeatureConfig.from_dict(cfg.get("features"))
@@ -127,6 +129,16 @@ def train_fold(
     model = build_model(cfg["model"], num_classes).to(device)
     n_params = sum(p.numel() for p in model.parameters())
     logger.info("model %s: %.2fM parameters", cfg["model"]["name"], n_params / 1e6)
+    if getattr(model, "source_checkpoint", None):
+        logger.info("pretrained weights: %s", model.source_checkpoint)
+
+    if tcfg["mode"] == "frozen_embeddings":
+        return _train_frozen_head(
+            cfg, tcfg, catalog, waves, test_fold, (train_idx, val_idx, test_idx), model, pipe,
+            device, logger, run_id, seed, evaluate_test, cache_dir,
+        )
+    if tcfg["mode"] != "finetune":
+        raise ValueError(f"unknown train mode {tcfg['mode']!r}")
 
     freeze_epochs = int(tcfg["freeze_backbone_epochs"] or 0)
     if freeze_epochs and hasattr(model, "set_backbone_trainable"):
@@ -209,7 +221,12 @@ def train_fold(
     logger.info("fold %d: selected epoch %d (val_acc %s)", test_fold, best_epoch, f"{best_val:.4f}" if best_val >= 0 else "n/a")
 
     test_logits = predict(model, pipe, waves[test_idx], device).numpy() if evaluate_test else np.zeros((0, num_classes))
+    return _result(cfg, catalog, test_fold, test_idx, test_logits, model, pipe, fcfg, best_epoch, best_val, epoch,
+                   train_seconds, history, run_id)
 
+
+def _result(cfg, catalog, test_fold, test_idx, test_logits, model, pipe, fcfg, best_epoch, best_val, epoch,
+            train_seconds, history, run_id) -> FoldResult:
     checkpoint = {
         "format": "audioscope-checkpoint-v1",
         "model_state": {k: v.cpu() for k, v in model.state_dict().items()},
@@ -243,3 +260,96 @@ def train_fold(
 def save_checkpoint(checkpoint: dict, path: str | Path) -> None:
     Path(path).parent.mkdir(parents=True, exist_ok=True)
     torch.save(checkpoint, path)
+
+
+@torch.no_grad()
+def _embeddings(model, pipe, waves, device, cache_path: Path | None, logger, batch_size: int = 16) -> torch.Tensor:
+    if cache_path is not None and cache_path.exists():
+        logger.info("loading cached embeddings %s", cache_path)
+        return torch.load(cache_path, weights_only=True)
+    model.eval()
+    out = []
+    t0 = time.time()
+    for i in range(0, len(waves), batch_size):
+        out.append(model.embed(pipe(waves[i : i + batch_size].to(device))).float().cpu())
+        if (i // batch_size) % 25 == 0:
+            logger.info("embedded %d/%d clips (%.0fs)", i + len(out[-1]), len(waves), time.time() - t0)
+    emb = torch.cat(out)
+    if cache_path is not None:
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        torch.save(emb, cache_path)
+    return emb
+
+
+def _train_frozen_head(cfg, tcfg, catalog, waves, test_fold, splits, model, pipe, device, logger, run_id, seed,
+                       evaluate_test, cache_dir) -> FoldResult:
+    """Linear probe: the pretrained trunk stays frozen (eval mode, no augmentation);
+    only ``model.head`` is trained, on embeddings computed once per clip."""
+    import hashlib
+    import json
+
+    train_idx, val_idx, test_idx = splits
+    fcfg = pipe.fcfg
+    model.set_backbone_trainable(False)
+    key_src = json.dumps(
+        {
+            "features": fcfg.to_dict(),
+            "model": {k: v for k, v in cfg["model"].items() if k not in ("dropout", "gradcam_layer")},
+            "dataset": catalog.name,
+            "n": len(catalog),
+            # Fold-specific normalization would make the embeddings fold-specific.
+            "fold": test_fold if fcfg.normalize != "none" else None,
+        },
+        sort_keys=True,
+    )
+    key = hashlib.sha1(key_src.encode()).hexdigest()[:12]
+    cache_path = Path(cache_dir) / f"emb_{catalog.name}_{key}.pt" if cache_dir else None
+    emb = _embeddings(model, pipe, waves, device, cache_path, logger)
+    targets = torch.as_tensor(catalog.targets)
+    head = model.head
+    opt = torch.optim.AdamW(head.parameters(), lr=tcfg["lr"], weight_decay=tcfg["weight_decay"])
+    g = torch.Generator().manual_seed(seed)
+    x_tr, y_tr = emb[train_idx].to(device), targets[train_idx].to(device)
+    x_va, y_va = emb[val_idx].to(device), targets[val_idx].to(device)
+    bs = tcfg["batch_size"]
+    steps = math.ceil(len(train_idx) / bs)
+    sched = torch.optim.lr_scheduler.LambdaLR(opt, _lr_lambda(steps * tcfg["warmup_epochs"], steps * tcfg["epochs"]))
+    best_state, best_epoch, best_val, best_val_loss = None, -1, -1.0, float("inf")
+    history, t0, epoch = [], time.time(), 0
+    for epoch in range(1, tcfg["epochs"] + 1):
+        head.train()
+        perm = torch.randperm(len(train_idx), generator=g).to(device)
+        loss_sum = 0.0
+        for i in range(0, len(perm), bs):
+            b = perm[i : i + bs]
+            logits = head(F.dropout(x_tr[b], p=model.dropout, training=True))
+            loss = F.cross_entropy(logits, y_tr[b], label_smoothing=tcfg["label_smoothing"])
+            opt.zero_grad(set_to_none=True)
+            loss.backward()
+            opt.step()
+            sched.step()
+            loss_sum += loss.item() * len(b)
+        head.eval()
+        with torch.no_grad():
+            tr_acc = (head(x_tr).argmax(1) == y_tr).float().mean().item()
+            rec = {"epoch": epoch, "train_loss": loss_sum / len(train_idx), "train_acc": tr_acc}
+            if len(val_idx):
+                vl = head(x_va)
+                rec["val_loss"] = F.cross_entropy(vl, y_va).item()
+                rec["val_acc"] = (vl.argmax(1) == y_va).float().mean().item()
+                if rec["val_acc"] > best_val or (rec["val_acc"] == best_val and rec["val_loss"] < best_val_loss):
+                    best_val, best_val_loss, best_epoch = rec["val_acc"], rec["val_loss"], epoch
+                    best_state = copy.deepcopy(head.state_dict())
+        history.append(rec)
+        if epoch % 10 == 0 or epoch == tcfg["epochs"]:
+            logger.info("fold %d head epoch %3d  loss %.4f  acc %.3f  val_acc %s", test_fold, epoch,
+                        rec["train_loss"], tr_acc, f"{rec.get('val_acc', float('nan')):.3f}")
+    if best_state is not None:
+        head.load_state_dict(best_state)
+    else:
+        best_epoch = epoch
+    logger.info("fold %d: selected head epoch %d (val_acc %.4f)", test_fold, best_epoch, best_val)
+    with torch.no_grad():
+        test_logits = head(emb[test_idx].to(device)).cpu().numpy() if evaluate_test else np.zeros((0, catalog.num_classes))
+    return _result(cfg, catalog, test_fold, test_idx, test_logits, model, pipe, fcfg, best_epoch, best_val, epoch,
+                   time.time() - t0, history, run_id)

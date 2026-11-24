@@ -42,3 +42,16 @@ def test_cnn14_loads_trunk_from_checkpoint(tmp_path):
 
 def test_build_model_names():
     assert isinstance(build_model({"name": "baseline_cnn", "channels": [4, 8]}, 3), BaselineCNN)
+
+
+def test_frozen_backbone_keeps_batchnorm_stats():
+    m = ResNetSpectrogram(num_classes=5, pretrained=None, input_size=(32, 32))
+    m.set_backbone_trainable(False)
+    m.train()
+    before = m.backbone.bn1.running_mean.clone()
+    m(torch.randn(4, 1, 20, 30))
+    assert torch.equal(before, m.backbone.bn1.running_mean)
+    m.set_backbone_trainable(True)
+    m.train()
+    m(torch.randn(4, 1, 20, 30))
+    assert not torch.equal(before, m.backbone.bn1.running_mean)

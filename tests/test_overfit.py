@@ -55,3 +55,31 @@ def test_train_fold_and_predictor_roundtrip(tmp_path):
     assert abs(out.probs[0] - expected) < 1e-4
     cam = pred.gradcam(test_wave)
     assert cam.shape == (32, pred.fcfg.num_frames)
+
+
+def test_frozen_embedding_head(tmp_path):
+    from audioscope.models import Cnn14Classifier
+
+    cat, waves = make_synthetic(num_classes=3, per_class_per_fold=4, folds=5)
+    feats = {"sample_rate": 8000, "clip_seconds": 1.0, "n_mels": 32, "n_fft": 256, "hop_length": 128,
+             "log": "db", "normalize": "none"}
+    src = Cnn14Classifier(num_classes=527, n_mels=32)
+    torch.save({"model": src.state_dict()}, tmp_path / "cnn14.pth")
+    cfg = {
+        "dataset": {"name": "synthetic", "root": "."},
+        "features": feats,
+        "model": {"name": "panns_cnn14", "n_mels": 32, "checkpoint_path": str(tmp_path / "cnn14.pth")},
+        "augment": {},
+        "train": {"mode": "frozen_embeddings", "epochs": 40, "batch_size": 16, "lr": 1e-2, "val_fraction": 0.25},
+    }
+    res = train_fold(cfg, cat, waves, 2, torch.device("cpu"), get_logger("test"), cache_dir=tmp_path)
+    assert res.test_logits.shape == (12, 3)
+    assert list(tmp_path.glob("emb_*.pt"))  # embeddings cached once for all folds
+    # Trunk untouched: identical to the loaded checkpoint.
+    state = res.checkpoint["model_state"]
+    assert torch.equal(state["conv_block1.conv1.weight"], src.state_dict()["conv_block1.conv1.weight"])
+    assert torch.equal(state["bn0.running_mean"], src.state_dict()["bn0.running_mean"])
+    pred = Predictor(res.checkpoint)
+    out = pred.predict(waves[res.test_indices[0]], k=1)
+    expected = torch.softmax(torch.from_numpy(res.test_logits[0]), 0).max().item()
+    assert abs(out.probs[0] - expected) < 1e-4

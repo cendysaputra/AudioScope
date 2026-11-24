@@ -1,6 +1,9 @@
 # Stage 3: PANNs Cnn14 pretrained on AudioSet (Kong et al., 2020), new 50-way head.
 # Checkpoint: Cnn14_mAP=0.431.pth from https://zenodo.org/record/3987831
-# (released by the PANNs authors under CC BY 4.0; confirm before use).
+# (Zenodo record license: CC BY 4.0), fetched with
+# `python -m audioscope.data.download --weights cnn14`.
+# Full fine-tuning of this 80M-parameter model is a GPU job; on CPU use
+# transfer-panns-cnn14-frozen.yaml.
 # The front end below matches the one Cnn14 was trained with.
 base: baseline.yaml
 features:

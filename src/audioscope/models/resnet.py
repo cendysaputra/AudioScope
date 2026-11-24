@@ -32,6 +32,7 @@ class ResNetSpectrogram(nn.Module):
         """``pretrained``: ``"imagenet"`` (torchvision default weights, downloaded
         on first use or read from ``weights_path``) or ``None`` (random init)."""
         super().__init__()
+        self._backbone_frozen = False
         ctor = getattr(torchvision.models, arch)
         self.backbone = ctor(weights=None)
         self.source_checkpoint = None
@@ -58,9 +59,20 @@ class ResNetSpectrogram(nn.Module):
         return self.backbone.fc.parameters()
 
     def set_backbone_trainable(self, trainable: bool) -> None:
+        self._backbone_frozen = not trainable
         for name, p in self.backbone.named_parameters():
             if not name.startswith("fc."):
                 p.requires_grad = trainable
+        self.train(self.training)
+
+    def train(self, mode: bool = True):
+        super().train(mode)
+        if self._backbone_frozen:
+            # A frozen backbone keeps its pretrained BatchNorm statistics.
+            for name, m in self.backbone.named_modules():
+                if isinstance(m, nn.BatchNorm2d) and not name.startswith("fc"):
+                    m.eval()
+        return self
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = F.interpolate(x, size=self.input_size, mode="bilinear", align_corners=False)
