@@ -55,3 +55,21 @@ def test_frozen_backbone_keeps_batchnorm_stats():
     m.train()
     m(torch.randn(4, 1, 20, 30))
     assert not torch.equal(before, m.backbone.bn1.running_mean)
+
+
+def test_every_config_builds_its_model():
+    """Each config in configs/ resolves to constructor arguments its model accepts."""
+    from pathlib import Path
+
+    from audioscope.config import load_config
+
+    for path in sorted(Path(__file__).parents[1].joinpath("configs").glob("*.yaml")):
+        cfg = load_config(path)
+        model_cfg = dict(cfg["model"])
+        # no weight files in the test: only the argument set is checked
+        for key in ("weights_path", "checkpoint_path"):
+            if key in model_cfg:
+                model_cfg[key] = None
+        if model_cfg.get("pretrained"):
+            model_cfg["pretrained"] = None
+        build_model(model_cfg, num_classes=50)

@@ -32,6 +32,12 @@ def load_config(path: str | Path) -> dict[str, Any]:
     base = cfg.pop("base", None)
     if base is not None:
         parent = load_config(path.parent / base)
+        # A child that switches to another model replaces the model section:
+        # the parent's architecture arguments (e.g. ``channels``) do not apply.
+        child_model, parent_model = cfg.get("model"), parent.get("model")
+        if isinstance(child_model, dict) and isinstance(parent_model, dict):
+            if child_model.get("name", parent_model.get("name")) != parent_model.get("name"):
+                parent = {**parent, "model": {}}
         cfg = deep_merge(parent, cfg)
     cfg.setdefault("name", path.stem)
     return cfg
