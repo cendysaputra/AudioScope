@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local datasets (never committed; see dataset licenses)
+data/*
+!data/README.md
+
+# Checkpoints and run artifacts
+*.pt
+*.pth
+*.ckpt
+checkpoints/
+eval/runs/*
+!eval/runs/.gitkeep
+
+# Caches
+.cache/
+*.npy
+*.npz
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store

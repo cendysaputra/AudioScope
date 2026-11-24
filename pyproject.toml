@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "audioscope"
+version = "0.1.0"
+description = "Environmental sound classification on log-mel spectrograms with CNNs (ESC-50)."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+dependencies = [
+    "torch>=2.4",
+    "torchaudio>=2.4",
+    "torchvision>=0.19",
+    "numpy>=1.26",
+    "soundfile>=0.12",
+    "pyyaml>=6.0",
+    "matplotlib>=3.8",
+    "librosa>=0.10",
+]
+
+[project.optional-dependencies]
+app = ["streamlit>=1.36"]
+dev = ["pytest>=8.0", "nbformat>=5.9", "nbclient>=0.10", "ipykernel>=6.29"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["slow: tests that train a model for a few steps"]
