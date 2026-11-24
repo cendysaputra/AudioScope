@@ -1,6 +1,6 @@
 # AudioScope project plan
 
-This document is the working plan for AudioScope. The repository is at the planning stage: the implementation tasks below are not done. [README.md](README.md) is the public summary and will receive measured results only after the evaluation rules in this file are met.
+This document is the working plan for AudioScope. The pipeline, evaluation harness, and demo are implemented; [Milestones](#milestones) tracks which tasks are done. [README.md](README.md) is the public summary and will receive measured results only after the evaluation rules in this file are met.
 
 ## Goals
 
@@ -54,7 +54,7 @@ ESC-50 is the dataset the project stands on.
 - 2,000 clips, 50 classes, 40 clips per class, so the classes are balanced.
 - Each clip is 5 seconds, mono, 44.1 kHz.
 - Five groups of ten classes: animals, natural soundscapes and water, human non-speech sounds, interior and domestic sounds, exterior and urban noises. The class list lives in the [official repository](https://github.com/karolpiczak/ESC-50).
-- The release includes a metadata table (`esc50.csv`) with a `fold` column valued 1 through 5. Folds are the same size. Clips cut from the same source recording are placed in a single fold, which limits one form of leakage.
+- The release includes a metadata table (`esc50.csv`) with a `fold` column valued 1 through 5. Folds are the same size. Within a class, clips cut from the same source recording are placed in a single fold, which limits one form of leakage. Four source ids (131943, 134049, 209698, 234879) appear in two folds, each time under two different classes (clock_tick/clock_alarm, hen/rooster); `tests/test_folds.py` pins that fact.
 - License: the dataset is distributed by its author under a Creative Commons non-commercial license. This repository will not commit the audio. Confirm the current terms on the dataset page before downloading.
 
 Source: Karol J. Piczak, "ESC: Dataset for Environmental Sound Classification," *Proceedings of the 23rd ACM International Conference on Multimedia*, pp. 1015–1018, 2015. DOI: [10.1145/2733373.2806390](https://doi.org/10.1145/2733373.2806390).
@@ -153,7 +153,7 @@ Every run that might be quoted lives in `eval/runs/<run-id>/`:
 - `train.log` — the console log of the script that produced the JSON.
 - `environment.txt` — Python, PyTorch, and torchaudio versions, plus the git revision.
 
-`metrics.json` names the model, the config path, and the git revision. The script that writes it lives in `eval/` and calls library code under `src/audioscope/`. A hand-edited JSON file is not a result.
+`metrics.json` names the model, the config path, and the git revision, and sets `"reportable": true` only when every fold ran from a clean git tree. The script that writes it lives in `eval/` and calls library code under `src/audioscope/`. A hand-edited JSON file is not a result.
 
 ### Evidence rule
 
@@ -218,7 +218,7 @@ AudioScope/
 │   ├── train/                 # loop, schedules, augmentation
 │   └── eval/                  # metric helpers shared with the scripts
 ├── eval/                      # entry points that write logs and metrics JSON
-│   └── runs/                  # one directory per reportable run (gitignored)
+│   └── runs/                  # one directory per run (checkpoints gitignored)
 ├── app/
 │   └── streamlit_app.py
 └── tests/                     # folds, feature shapes, a tiny overfit check
@@ -226,40 +226,40 @@ AudioScope/
 
 `src/audioscope/eval/` holds functions. `eval/` at the repository root holds the scripts a person runs. The README may quote a number only when one of those scripts wrote it.
 
-Dependencies, the package layout, and `data/` plus `eval/runs/` belong in `.gitignore` once the skeleton exists. Checkpoints stay out of git unless a small demo checkpoint is deliberately added later, with its config and run id.
+`data/` and checkpoints are in `.gitignore`. Run directories under `eval/runs/` are committed without their checkpoints, so each README number links to its metrics, log, and config. Checkpoints stay out of git unless a small demo checkpoint is deliberately added later, with its config and run id.
 
 ## Milestones
 
-Tasks are unchecked because the work has not started. A phase is finished when its tasks are done and, where a phase produces a measurement, the matching directory under `eval/runs/` exists.
+Checked tasks are done in the repository. A phase is finished when its tasks are done and, where a phase produces a measurement, the matching directory under `eval/runs/` exists.
 
 ### Phase 0 — Skeleton
 
-- [ ] Add a package layout matching the tree above, with empty modules and a `pyproject.toml`.
-- [ ] Add `.gitignore` for virtual environments, `data/`, checkpoints, and `eval/runs/`.
-- [ ] Add the MIT `LICENSE` file.
-- [ ] Pin the planned runtime in the project metadata: Python, PyTorch, torchaudio, librosa, matplotlib, Streamlit.
+- [x] Add a package layout matching the tree above, with empty modules and a `pyproject.toml`.
+- [x] Add `.gitignore` for virtual environments, `data/`, checkpoints, and `eval/runs/`.
+- [x] Add the MIT `LICENSE` file.
+- [x] Pin the planned runtime in the project metadata: Python, PyTorch, torchaudio, librosa, matplotlib, Streamlit.
 
 ### Phase 1 — Data
 
-- [ ] Document and script the ESC-50 download into `data/esc50`.
-- [ ] Parse `esc50.csv` and build a dataset object keyed by the official fold id.
-- [ ] Test that the five folds are disjoint, cover every clip, and match the published fold column.
-- [ ] Notebook: one clip per class group, with waveform and log-mel side by side.
+- [x] Document and script the ESC-50 download into `data/esc50`.
+- [x] Parse `esc50.csv` and build a dataset object keyed by the official fold id.
+- [x] Test that the five folds are disjoint, cover every clip, and match the published fold column.
+- [x] Notebook: one clip per class group, with waveform and log-mel side by side.
 
 ### Phase 2 — Features
 
-- [ ] Implement resample, STFT magnitude, mel filterbank, and log-mel in torchaudio.
-- [ ] Implement optional MFCC with the same front end.
-- [ ] Check a batch of clips against librosa within a stated tolerance, and save the comparison in the notebook.
-- [ ] Unit tests for output shape and for a fixed-seed spectrogram snapshot.
+- [x] Implement resample, STFT magnitude, mel filterbank, and log-mel in torchaudio.
+- [x] Implement optional MFCC with the same front end.
+- [x] Check a batch of clips against librosa within a stated tolerance, and save the comparison in the notebook.
+- [x] Unit tests for output shape and for a fixed-seed spectrogram snapshot.
 
 ### Phase 3 — Baseline and the evaluation harness
 
-- [ ] Implement the small CNN and `configs/baseline.yaml`.
-- [ ] Implement the training loop with a training-fold validation split and a recorded seed.
-- [ ] Implement `eval/` cross-validation: five folds, no test-fold decisions, log plus `metrics.json`.
-- [ ] Run the baseline on all five folds and archive the run directory.
-- [ ] Confirm the README is still free of any score until that archive exists, then add the baseline from the JSON.
+- [x] Implement the small CNN and `configs/baseline.yaml`.
+- [x] Implement the training loop with a training-fold validation split and a recorded seed.
+- [x] Implement `eval/` cross-validation: five folds, no test-fold decisions, log plus `metrics.json`.
+- [x] Run the baseline on all five folds and archive the run directory.
+- [x] Confirm the README is still free of any score until that archive exists, then add the baseline from the JSON.
 
 ### Phase 4 — Augmentation
 
@@ -278,15 +278,15 @@ Tasks are unchecked because the work has not started. A phase is finished when i
 
 ### Phase 6 — Streamlit demo
 
-- [ ] Upload and microphone recording into the shared feature code.
-- [ ] Waveform and log-mel views with physical axis labels.
-- [ ] Top-k table bound to a selected checkpoint.
-- [ ] Grad-CAM overlay mapped back to the spectrogram axes.
-- [ ] Empty-checkpoint state that still renders the figures and explains why there is no prediction.
+- [x] Upload and microphone recording into the shared feature code.
+- [x] Waveform and log-mel views with physical axis labels.
+- [x] Top-k table bound to a selected checkpoint.
+- [x] Grad-CAM overlay mapped back to the spectrogram axes.
+- [x] Empty-checkpoint state that still renders the figures and explains why there is no prediction.
 
 ### Phase 7 — Optional UrbanSound8K
 
-- [ ] Loader for the official 10 folds.
+- [x] Loader for the official 10 folds.
 - [ ] Repeat the best ESC-50 config under that protocol, as its own run.
 - [ ] Report it separately from ESC-50.
 
@@ -303,7 +303,7 @@ Tasks are unchecked because the work has not started. A phase is finished when i
 | Five folds of a larger model are slow on CPU and a partial run gets quoted. | A reportable result has all five folds in `metrics.json`. A partial run stays in its directory and out of the README. |
 | Grad-CAM on a resized ImageNet input is drawn on the wrong axes. | The overlay is projected onto the original mel-by-time grid and labeled in seconds and hertz. The layer used for the map is fixed in config. |
 | Similar mechanical classes dominate the errors and the mean hides it. | Per-class accuracy and the confusion matrix are required outputs, not optional plots. |
-| Dataset audio or a checkpoint with a restricted license is committed under MIT. | `data/` and run artifacts are gitignored. The README states that dataset licenses stay with the datasets. A pretrained weight is documented before use. |
+| Dataset audio or a checkpoint with a restricted license is committed under MIT. | `data/` and checkpoints are gitignored. The README states that dataset licenses stay with the datasets. A pretrained weight is documented before use. |
 | A score is typed into the README from a notebook cell or from memory. | The evidence rule above is the gate. The results section names the run id that produced each AudioScope number. |
 
 ## References
