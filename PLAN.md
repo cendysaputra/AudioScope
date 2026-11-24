@@ -263,16 +263,16 @@ Checked tasks are done in the repository. A phase is finished when its tasks are
 
 ### Phase 4 — Augmentation
 
-- [ ] SpecAugment, training only, with its own config and 5-fold run.
-- [ ] Mixup, with its own config and 5-fold run.
-- [ ] Time shift and additive noise, each with its own config and 5-fold run.
-- [ ] One combined config, run only after the separate runs are archived.
-- [ ] Update the README from the new metrics files.
+- [x] SpecAugment, training only, with its own config and 5-fold run.
+- [x] Mixup, with its own config and 5-fold run.
+- [x] Time shift and additive noise, each with its own config and 5-fold run.
+- [x] One combined config, run only after the separate runs are archived.
+- [x] Update the README from the new metrics files.
 
 ### Phase 5 — Transfer learning
 
-- [ ] ImageNet ResNet on three-channel log-mel inputs, with a recorded freeze schedule.
-- [ ] One pretrained audio model (PANNs or AST), input pipeline matched to that checkpoint.
+- [x] ImageNet ResNet on three-channel log-mel inputs, with a recorded freeze schedule.
+- [x] One pretrained audio model (PANNs or AST), input pipeline matched to that checkpoint. PANNs Cnn14 was run as a frozen feature extractor with a linear head (`configs/transfer-panns-cnn14-frozen.yaml`); full fine-tuning (`configs/transfer-panns-cnn14.yaml`) needs a GPU and was not run.
 - [ ] Five-fold runs for both, archived like the baseline.
 - [ ] Write the comparison, citing external numbers from their papers.
 
@@ -289,6 +289,8 @@ Checked tasks are done in the repository. A phase is finished when its tasks are
 - [x] Loader for the official 10 folds.
 - [ ] Repeat the best ESC-50 config under that protocol, as its own run.
 - [ ] Report it separately from ESC-50.
+
+Not run: the UrbanSound8K download (about 6 GB) and its 10-fold protocol do not fit the CPU-only budget this project was evaluated on. The loader (`load_urbansound8k`) and `configs/urbansound8k-baseline.yaml` are in place; no UrbanSound8K number is reported.
 
 ## Risks and mitigations
 
