@@ -273,8 +273,8 @@ Checked tasks are done in the repository. A phase is finished when its tasks are
 
 - [x] ImageNet ResNet on three-channel log-mel inputs, with a recorded freeze schedule.
 - [x] One pretrained audio model (PANNs or AST), input pipeline matched to that checkpoint. PANNs Cnn14 was run as a frozen feature extractor with a linear head (`configs/transfer-panns-cnn14-frozen.yaml`); full fine-tuning (`configs/transfer-panns-cnn14.yaml`) needs a GPU and was not run.
-- [ ] Five-fold runs for both, archived like the baseline.
-- [ ] Write the comparison, citing external numbers from their papers.
+- [x] Five-fold runs for both, archived like the baseline.
+- [x] Write the comparison, citing external numbers from their papers. The comparison between AudioScope runs is in the README; published PANNs/AST ESC-50 numbers were not quoted because the papers could not be checked from the run environment.
 
 ### Phase 6 — Streamlit demo
 
