@@ -86,6 +86,13 @@ class Cnn14Classifier(nn.Module):
 
     def embed(self, x: torch.Tensor) -> torch.Tensor:
         """2048-d clip embedding (ReLU(fc1)), the PANNs embedding layer."""
+        x = self.pooled(x)
+        trunk_training = self.training and not self._backbone_frozen
+        x = F.dropout(x, p=self.dropout, training=trunk_training)
+        return F.relu_(self.fc1(x))
+
+    def pooled(self, x: torch.Tensor) -> torch.Tensor:
+        """2048-d pooled conv features, the input of ``fc1``."""
         # x: (B, 1, n_mels, frames) -> Cnn14 layout (B, 1, frames, n_mels)
         x = x.transpose(2, 3)
         x = self.bn0(x.transpose(1, 3)).transpose(1, 3)
@@ -96,9 +103,7 @@ class Cnn14Classifier(nn.Module):
             x = getattr(self, f"conv_block{i}")(x, pool=pool)
             x = F.dropout(x, p=p, training=trunk_training)
         x = x.mean(dim=3)  # over mel
-        x = x.max(dim=2).values + x.mean(dim=2)  # over time
-        x = F.dropout(x, p=self.dropout, training=trunk_training)
-        return F.relu_(self.fc1(x))
+        return x.max(dim=2).values + x.mean(dim=2)  # over time
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.embed(x)

@@ -263,93 +263,138 @@ def save_checkpoint(checkpoint: dict, path: str | Path) -> None:
 
 
 @torch.no_grad()
-def _embeddings(model, pipe, waves, device, cache_path: Path | None, logger, batch_size: int = 16) -> torch.Tensor:
-    if cache_path is not None and cache_path.exists():
-        logger.info("loading cached embeddings %s", cache_path)
-        return torch.load(cache_path, weights_only=True)
+def _pooled_features(model, pipe, waves, device, acfg: AugmentConfig | None, seed: int, logger,
+                     batch_size: int = 16) -> torch.Tensor:
+    """Frozen-trunk features (input of ``fc1``) for every clip, clean or under one random augmentation."""
     model.eval()
-    out = []
-    t0 = time.time()
+    gen = torch.Generator().manual_seed(seed)
+    out, t0 = [], time.time()
     for i in range(0, len(waves), batch_size):
-        out.append(model.embed(pipe(waves[i : i + batch_size].to(device))).float().cpu())
+        w = waves[i : i + batch_size]
+        if acfg is not None:
+            w = random_time_shift(w, acfg.time_shift, gen)
+            w = add_noise(w, acfg.noise_prob, acfg.noise_snr_db, gen)
+        x = pipe(w.to(device))
+        if acfg is not None:
+            x = spec_augment(x, acfg, gen)
+        out.append(model.pooled(x).float().cpu())
         if (i // batch_size) % 25 == 0:
             logger.info("embedded %d/%d clips (%.0fs)", i + len(out[-1]), len(waves), time.time() - t0)
-    emb = torch.cat(out)
-    if cache_path is not None:
-        cache_path.parent.mkdir(parents=True, exist_ok=True)
-        torch.save(emb, cache_path)
-    return emb
+    return torch.cat(out)
 
 
 def _train_frozen_head(cfg, tcfg, catalog, waves, test_fold, splits, model, pipe, device, logger, run_id, seed,
                        evaluate_test, cache_dir) -> FoldResult:
-    """Linear probe: the pretrained trunk stays frozen (eval mode, no augmentation);
-    only ``model.head`` is trained, on embeddings computed once per clip."""
+    """Probe on a frozen pretrained trunk. The trunk runs in eval mode once per clip (and once per
+    augmented view, if ``embedding_views`` > 0); only the head, plus ``fc1`` when ``probe: fc1``,
+    is trained, on the cached pooled features. Validation and test use the clean view only."""
     import hashlib
     import json
 
     train_idx, val_idx, test_idx = splits
     fcfg = pipe.fcfg
+    acfg = AugmentConfig.from_dict(cfg.get("augment"))
+    n_views = int(tcfg.get("embedding_views", 0))
+    probe = tcfg.get("probe", "linear")
+    if probe not in ("linear", "fc1"):
+        raise ValueError(f"unknown probe {probe!r}")
     model.set_backbone_trainable(False)
-    key_src = json.dumps(
-        {
-            "features": fcfg.to_dict(),
-            "model": {k: v for k, v in cfg["model"].items() if k not in ("dropout", "gradcam_layer")},
-            "dataset": catalog.name,
-            "n": len(catalog),
-            # Fold-specific normalization would make the embeddings fold-specific.
-            "fold": test_fold if fcfg.normalize != "none" else None,
-        },
-        sort_keys=True,
-    )
-    key = hashlib.sha1(key_src.encode()).hexdigest()[:12]
-    cache_path = Path(cache_dir) / f"emb_{catalog.name}_{key}.pt" if cache_dir else None
-    emb = _embeddings(model, pipe, waves, device, cache_path, logger)
+    key_base = {
+        "features": fcfg.to_dict(),
+        "model": {k: v for k, v in cfg["model"].items() if k not in ("dropout", "gradcam_layer")},
+        "dataset": catalog.name,
+        "n": len(catalog),
+        # Fold-specific normalization would make the features fold-specific.
+        "fold": test_fold if fcfg.normalize != "none" else None,
+        "kind": "pooled",
+    }
+    views = []
+    for v in range(n_views + 1):
+        view_acfg = acfg if v else None
+        key_src = json.dumps({**key_base, "view": v, "augment": vars(view_acfg) if view_acfg else None},
+                             sort_keys=True)
+        key = hashlib.sha1(key_src.encode()).hexdigest()[:12]
+        path = Path(cache_dir) / f"feat_{catalog.name}_{key}.pt" if cache_dir else None
+        if path is not None and path.exists():
+            logger.info("loading cached features %s (view %d)", path, v)
+            views.append(torch.load(path, weights_only=True))
+            continue
+        logger.info("computing trunk features, view %d of %d", v, n_views)
+        feats = _pooled_features(model, pipe, waves, device, view_acfg, seed=1000 + v, logger=logger)
+        if path is not None:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            torch.save(feats, path)
+        views.append(feats)
+    feats = torch.stack(views)  # (views, clips, 2048)
+
+    fc1, head = model.fc1, model.head
+    if probe == "linear":
+        with torch.no_grad():  # pretrained fc1 stays fixed: precompute ReLU(fc1) once
+            feats = torch.cat([F.relu(fc1(feats[v].to(device))).cpu()[None] for v in range(len(feats))])
+
+    def forward(x: torch.Tensor, train: bool) -> torch.Tensor:
+        if probe == "fc1":
+            x = F.relu(fc1(F.dropout(x, p=model.dropout, training=train)))
+        return head(F.dropout(x, p=model.dropout, training=train))
+
+    params = [{"params": head.parameters(), "lr": tcfg["lr"]}]
+    if probe == "fc1":
+        fc1.weight.requires_grad_(True)
+        fc1.bias.requires_grad_(True)
+        params.append({"params": fc1.parameters(), "lr": tcfg["lr"] * float(tcfg.get("fc1_lr_scale", 1.0))})
     targets = torch.as_tensor(catalog.targets)
-    head = model.head
-    opt = torch.optim.AdamW(head.parameters(), lr=tcfg["lr"], weight_decay=tcfg["weight_decay"])
+    opt = torch.optim.AdamW(params, weight_decay=tcfg["weight_decay"])
     g = torch.Generator().manual_seed(seed)
-    x_tr, y_tr = emb[train_idx].to(device), targets[train_idx].to(device)
-    x_va, y_va = emb[val_idx].to(device), targets[val_idx].to(device)
+    np_rng = np.random.default_rng(seed)
+    x_tr_views = feats[:, train_idx].to(device)  # (views, n_train, d)
+    y_tr = targets[train_idx].to(device)
+    x_tr = x_tr_views[0]
+    x_va, y_va = feats[0, val_idx].to(device), targets[val_idx].to(device)
     bs = tcfg["batch_size"]
     steps = math.ceil(len(train_idx) / bs)
     sched = torch.optim.lr_scheduler.LambdaLR(opt, _lr_lambda(steps * tcfg["warmup_epochs"], steps * tcfg["epochs"]))
     best_state, best_epoch, best_val, best_val_loss = None, -1, -1.0, float("inf")
     history, t0, epoch = [], time.time(), 0
+    num_classes = catalog.num_classes
     for epoch in range(1, tcfg["epochs"] + 1):
-        head.train()
         perm = torch.randperm(len(train_idx), generator=g).to(device)
+        view = torch.randint(0, len(feats), (len(train_idx),), generator=g).to(device)
         loss_sum = 0.0
         for i in range(0, len(perm), bs):
             b = perm[i : i + bs]
-            logits = head(F.dropout(x_tr[b], p=model.dropout, training=True))
-            loss = F.cross_entropy(logits, y_tr[b], label_smoothing=tcfg["label_smoothing"])
+            x = x_tr_views[view[i : i + bs], b]
+            y = F.one_hot(y_tr[b], num_classes).float()
+            x, y = mixup(x, y, acfg.mixup_alpha, acfg.mixup_prob, np_rng)
+            if tcfg["label_smoothing"]:
+                y = y * (1 - tcfg["label_smoothing"]) + tcfg["label_smoothing"] / num_classes
+            loss = torch.sum(-y * F.log_softmax(forward(x, True), dim=1), dim=1).mean()
             opt.zero_grad(set_to_none=True)
             loss.backward()
             opt.step()
             sched.step()
             loss_sum += loss.item() * len(b)
-        head.eval()
         with torch.no_grad():
-            tr_acc = (head(x_tr).argmax(1) == y_tr).float().mean().item()
+            tr_acc = (forward(x_tr, False).argmax(1) == y_tr).float().mean().item()
             rec = {"epoch": epoch, "train_loss": loss_sum / len(train_idx), "train_acc": tr_acc}
             if len(val_idx):
-                vl = head(x_va)
+                vl = forward(x_va, False)
                 rec["val_loss"] = F.cross_entropy(vl, y_va).item()
                 rec["val_acc"] = (vl.argmax(1) == y_va).float().mean().item()
                 if rec["val_acc"] > best_val or (rec["val_acc"] == best_val and rec["val_loss"] < best_val_loss):
                     best_val, best_val_loss, best_epoch = rec["val_acc"], rec["val_loss"], epoch
-                    best_state = copy.deepcopy(head.state_dict())
+                    best_state = copy.deepcopy({"head": head.state_dict(), "fc1": fc1.state_dict()})
         history.append(rec)
         if epoch % 10 == 0 or epoch == tcfg["epochs"]:
             logger.info("fold %d head epoch %3d  loss %.4f  acc %.3f  val_acc %s", test_fold, epoch,
                         rec["train_loss"], tr_acc, f"{rec.get('val_acc', float('nan')):.3f}")
     if best_state is not None:
-        head.load_state_dict(best_state)
+        head.load_state_dict(best_state["head"])
+        fc1.load_state_dict(best_state["fc1"])
     else:
         best_epoch = epoch
     logger.info("fold %d: selected head epoch %d (val_acc %.4f)", test_fold, best_epoch, best_val)
     with torch.no_grad():
-        test_logits = head(emb[test_idx].to(device)).cpu().numpy() if evaluate_test else np.zeros((0, catalog.num_classes))
+        test_logits = (forward(feats[0, test_idx].to(device), False).cpu().numpy() if evaluate_test
+                       else np.zeros((0, num_classes)))
     return _result(cfg, catalog, test_fold, test_idx, test_logits, model, pipe, fcfg, best_epoch, best_val, epoch,
                    time.time() - t0, history, run_id)
