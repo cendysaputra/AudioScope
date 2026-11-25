@@ -1,0 +1,8 @@
+# Stage 3b: frozen PANNs Cnn14 trunk; fc1 (2048 -> 2048, initialized from the
+# AudioSet checkpoint) and a new 50-way head are trained on cached pooled trunk
+# features. Chosen over the plain linear probe, over augmented trunk views, and
+# over feature-space mixup by mean validation accuracy only (test folds unscored).
+base: transfer-panns-cnn14-frozen.yaml
+train:
+  probe: fc1
+  fc1_lr_scale: 0.1
