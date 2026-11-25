@@ -23,14 +23,15 @@ def main() -> None:
         if not (m.get("reportable") or args.all):
             continue
         a, f = m["summary"]["accuracy"], m["summary"]["macro_f1"]
-        rows.append(
-            f"| `{m['run_id']}` | `{m['config_path']}` | {m['model']} | "
-            f"{100 * a['mean']:.1f} ± {100 * a['std']:.1f} | {100 * f['mean']:.1f} ± {100 * f['std']:.1f} | "
-            f"{len(m['folds'])} | `{m['git_revision'][:7]}` |"
-        )
-    print("| Run | Config | Model | Accuracy % (mean ± std) | Macro F1 % (mean ± std) | Folds | Git |")
-    print("| --- | --- | --- | --- | --- | --- | --- |")
-    print("\n".join(rows))
+        folds = " · ".join(f"{100 * x['accuracy']:.2f}".rstrip("0").rstrip(".") for x in m["per_fold"])
+        rows.append((a["mean"], (
+            f"| [`{m['run_id']}`]({p.as_posix()}) | {m['model']} | "
+            f"**{100 * a['mean']:.1f}** ± {100 * a['std']:.1f} | {folds} | {100 * f['mean']:.1f} ± {100 * f['std']:.1f} | "
+            f"`{m['git_revision'][:7]}` |"
+        )))
+    print("| Run (links to metrics.json) | Model | Accuracy % | Per-fold accuracy % (folds 1–5) | Macro F1 % | Git |")
+    print("| --- | --- | --- | --- | --- | --- |")
+    print("\n".join(r for _, r in sorted(rows, key=lambda t: -t[0])))
 
 
 if __name__ == "__main__":
