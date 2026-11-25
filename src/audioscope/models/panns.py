@@ -43,6 +43,7 @@ class Cnn14Classifier(nn.Module):
     ):
         super().__init__()
         self._backbone_frozen = False
+        self.cam_time_major = True  # conv maps are (time, mel); Grad-CAM transposes them
         self.bn0 = nn.BatchNorm2d(n_mels)
         widths = [1, 64, 128, 256, 512, 1024, 2048]
         for i in range(6):
@@ -53,7 +54,7 @@ class Cnn14Classifier(nn.Module):
         self.source_checkpoint = None
         if checkpoint_path:
             self.load_audioset(checkpoint_path)
-        self.default_gradcam_layer = "conv_block5"
+        self.default_gradcam_layer = "conv_block6"
 
     def load_audioset(self, path: str | Path) -> None:
         ckpt = torch.load(Path(path), map_location="cpu", weights_only=False)

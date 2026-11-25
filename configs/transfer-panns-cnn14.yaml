@@ -23,7 +23,7 @@ model:
   n_mels: 64
   checkpoint_path: data/pretrained/Cnn14_mAP=0.431.pth
   dropout: 0.5
-  gradcam_layer: conv_block5
+  gradcam_layer: conv_block6  # last conv block; conv_block5 gives an all-zero CAM here
 augment:
   specaugment: true
   freq_mask_param: 8

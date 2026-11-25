@@ -73,3 +73,25 @@ def test_every_config_builds_its_model():
         if model_cfg.get("pretrained"):
             model_cfg["pretrained"] = None
         build_model(model_cfg, num_classes=50)
+
+
+def test_gradcam_time_major_model_maps_back_to_mel_time():
+    """A model whose conv maps are (time, mel) must get its CAM transposed to the input's (mel, time)."""
+    import torch.nn as nn
+
+    class TimeMajor(nn.Module):
+        cam_time_major = True
+
+        def __init__(self):
+            super().__init__()
+            self.conv = nn.Conv2d(1, 1, 1, bias=False)
+            nn.init.ones_(self.conv.weight)
+
+        def forward(self, x):  # x: (B, 1, mel, time)
+            return self.conv(x.transpose(2, 3)).mean(dim=(2, 3)).repeat(1, 2)
+
+    x = torch.zeros(1, 1, 8, 32)
+    x[0, 0, 6, 20] = 1.0  # one bright cell at mel band 6, frame 20
+    cam, _ = GradCAM(TimeMajor(), "conv")(x, 0)
+    assert cam.shape == (1, 8, 32)
+    assert tuple((cam[0] == cam[0].max()).nonzero()[0].tolist()) == (6, 20)

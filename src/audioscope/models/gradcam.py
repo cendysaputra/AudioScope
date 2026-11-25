@@ -52,6 +52,9 @@ class GradCAM:
         acts, grads = self._acts.detach(), self._grads.detach()
         weights = grads.mean(dim=(2, 3), keepdim=True)
         cam = F.relu((weights * acts).sum(dim=1, keepdim=True))
+        if getattr(self.model, "cam_time_major", False):
+            # The model's conv maps are (time, mel), e.g. Cnn14; bring them to the input's (mel, time).
+            cam = cam.transpose(-1, -2)
         cam = F.interpolate(cam, size=x.shape[-2:], mode="bilinear", align_corners=False).squeeze(1)
         flat = cam.flatten(1)
         lo = flat.min(dim=1).values.view(-1, 1, 1)
