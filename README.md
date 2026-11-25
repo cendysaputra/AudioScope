@@ -1,22 +1,16 @@
-<h1 align="center">AudioScope</h1>
+# AudioScope
 
-<p align="center">
-  <b>Hear it, see it, classify it.</b><br>
-  Environmental sound classification on log-mel spectrograms, with a Streamlit demo that shows <i>why</i> the model decided.
-</p>
+**Hear it, see it, classify it.** Environmental sound classification on log-mel spectrograms, with a Streamlit demo that shows *why* the model decided.
 
-<p align="center">
-  <img alt="ESC-50 5-fold accuracy 93.0%" src="https://img.shields.io/badge/ESC--50%205--fold-93.0%25-00b894">
-  <img alt="Python" src="https://img.shields.io/badge/python-3.10%2B-257de0">
-  <img alt="PyTorch and torchaudio" src="https://img.shields.io/badge/PyTorch-torchaudio-ee4c2c">
-  <img alt="Streamlit demo" src="https://img.shields.io/badge/demo-Streamlit-ff4b4b">
-  <img alt="MIT license" src="https://img.shields.io/badge/license-MIT-666666">
-</p>
+![ESC-50 5-fold accuracy 93.0%](https://img.shields.io/badge/ESC--50%205--fold-93.0%25-00b894)
+![Python](https://img.shields.io/badge/python-3.10%2B-257de0)
+![PyTorch and torchaudio](https://img.shields.io/badge/PyTorch-torchaudio-ee4c2c)
+![Streamlit demo](https://img.shields.io/badge/demo-Streamlit-ff4b4b)
+![MIT license](https://img.shields.io/badge/license-MIT-666666)
 
-<p align="center">
-  <img src="docs/app.png" alt="AudioScope Streamlit app: a rooster clip, its waveform, the log-mel spectrogram with a Grad-CAM overlay, and the top-5 prediction" width="820">
-</p>
-<p align="center"><sub>The demo on a held-out ESC-50 test clip (<code>1-34119-A-1.wav</code>, fold 1), scored by the fold-1 checkpoint of <code>transfer-panns-cnn14-fc1-v1</code>, which never saw fold 1 during training.</sub></p>
+![The AudioScope process on a real ESC-50 siren clip: the waveform is drawn, its log-mel spectrogram is computed, Cnn14's Grad-CAM highlights the regions behind the prediction, and the top-5 class bars grow to siren 100%](docs/process.gif)
+
+<sub>A held-out ESC-50 test clip (`1-54084-A-42.wav`, fold 1) going through the fold-1 checkpoint of `transfer-panns-cnn14-fc1-v1`, which never saw fold 1 in training. Made with `eval/make_process_gif.py`.</sub>
 
 ## At a glance
 
@@ -78,6 +72,12 @@ For reference, Piczak (2015) reports 81.3% for crowdsourced human listeners (a r
 
 </details>
 
+## Demo
+
+<img src="docs/app.png" alt="AudioScope Streamlit app: a rooster clip, its waveform, the log-mel spectrogram with a Grad-CAM overlay, and the top-5 prediction" width="820">
+
+<sub>The Streamlit app on another held-out clip (`1-34119-A-1.wav`, rooster, fold 1). The sidebar shows which checkpoint, config, run, and commit produced the prediction.</sub>
+
 ## Quick start
 
 ```bash
@@ -95,7 +95,7 @@ For each of the five folds, `eval/crossval.py` trains on the other four, picks t
 
 ```text
 src/audioscope/   library: data (folds, cache), features (log-mel, MFCC), models (CNN, ResNet, Cnn14, Grad-CAM), train, eval
-eval/             crossval.py, ensemble.py, results_table.py, plot_results.py, feature_check.py
+eval/             crossval.py, ensemble.py, results_table.py, plot_results.py, make_process_gif.py, feature_check.py
 eval/runs/        one directory per run (checkpoints not committed)
 configs/          one YAML per experiment
 app/              Streamlit demo
