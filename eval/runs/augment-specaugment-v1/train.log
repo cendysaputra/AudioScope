@@ -1,4 +1,4 @@
-2026-11-24 16:00:46 INFO run augment-specaugment-v1  config configs/augment-specaugment.yaml  git 11d685fe8f7a3598524b1f825810aa09327602bb
+2026-11-24 16:00:46 INFO run augment-specaugment-v1  config configs/augment-specaugment.yaml  git 6ed706390a6e1bda6616d863f53b829a08d7cdb4
 2026-11-24 16:00:46 INFO dataset esc50: 2000 clips, 50 classes, folds [1, 2, 3, 4, 5]
 2026-11-24 16:00:47 INFO fold 1: train=1420 val=180 test=400 (seed 1)
 2026-11-24 16:00:55 INFO model baseline_cnn: 0.40M parameters

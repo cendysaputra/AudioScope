@@ -1,4 +1,4 @@
-2026-11-24 19:20:51 INFO run augment-combined-v1  config configs/augment-combined.yaml  git 1cd0d0bd49ac8339b5e3fdbb2711e48850aa6256
+2026-11-24 19:20:51 INFO run augment-combined-v1  config configs/augment-combined.yaml  git 4ece7231987b5d8105b1b1ec4d6edf8fc6af6a72
 2026-11-24 19:20:51 INFO dataset esc50: 2000 clips, 50 classes, folds [1, 2, 3, 4, 5]
 2026-11-24 19:20:52 INFO fold 1: train=1420 val=180 test=400 (seed 1)
 2026-11-24 19:20:54 INFO model baseline_cnn: 0.40M parameters

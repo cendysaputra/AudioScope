@@ -5,7 +5,7 @@
   "model": "resnet",
   "config_path": "configs/transfer-resnet18.yaml",
   "config_name": "baseline",
-  "git_revision": "562c44a9c812b537dc7d5a30af40edb04c419344",
+  "git_revision": "80d91e66daf3264501bbc439682f888ebb76b277",
   "folds": [
     1,
     2,

@@ -5,7 +5,7 @@
   "model": "baseline_cnn",
   "config_path": "configs/baseline.yaml",
   "config_name": "baseline",
-  "git_revision": "7a9ff64e6dfe83b6ef188b6272a9ee86447e158f",
+  "git_revision": "0af334111f9fdc413fb2260d114a10ce759c9315",
   "folds": [
     1,
     2,

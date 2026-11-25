@@ -5,7 +5,7 @@
   "model": "baseline_cnn",
   "config_path": "configs/augment-mixup.yaml",
   "config_name": "baseline",
-  "git_revision": "11d685fe8f7a3598524b1f825810aa09327602bb",
+  "git_revision": "6ed706390a6e1bda6616d863f53b829a08d7cdb4",
   "folds": [
     1,
     2,

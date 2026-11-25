@@ -1,4 +1,4 @@
-2026-11-24 14:58:20 INFO run baseline-v1  config configs/baseline.yaml  git 7a9ff64e6dfe83b6ef188b6272a9ee86447e158f
+2026-11-24 14:58:20 INFO run baseline-v1  config configs/baseline.yaml  git 0af334111f9fdc413fb2260d114a10ce759c9315
 2026-11-24 14:58:20 INFO dataset esc50: 2000 clips, 50 classes, folds [1, 2, 3, 4, 5]
 2026-11-24 14:58:21 INFO fold 1: train=1420 val=180 test=400 (seed 1)
 2026-11-24 14:58:22 INFO model baseline_cnn: 0.40M parameters

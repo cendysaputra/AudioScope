@@ -1,0 +1,17 @@
+2026-11-25 01:25:19 INFO run ensemble-cnn14fc1-resnet18-v1  ensemble of ['eval/runs/transfer-panns-cnn14-fc1-v1', 'eval/runs/transfer-resnet18-v1']  git a56edd9b0b4d9ac40313dd93f647e819813380d3
+2026-11-25 01:25:55 INFO fold 1: scored transfer-panns-cnn14-fc1-v1 (val acc 0.9611)
+2026-11-25 01:26:34 INFO fold 1: scored transfer-resnet18-v1 (val acc 0.8278)
+2026-11-25 01:26:34 INFO fold 1 weights [1.0, 0.0]  val acc 0.9611  TEST accuracy 0.9325  macro_f1 0.9303
+2026-11-25 01:27:06 INFO fold 2: scored transfer-panns-cnn14-fc1-v1 (val acc 0.9240)
+2026-11-25 01:27:14 INFO fold 2: scored transfer-resnet18-v1 (val acc 0.9181)
+2026-11-25 01:27:14 INFO fold 2 weights [0.7, 0.3]  val acc 0.9415  TEST accuracy 0.9425  macro_f1 0.9411
+2026-11-25 01:27:47 INFO fold 3: scored transfer-panns-cnn14-fc1-v1 (val acc 0.9408)
+2026-11-25 01:27:56 INFO fold 3: scored transfer-resnet18-v1 (val acc 0.8639)
+2026-11-25 01:27:56 INFO fold 3 weights [0.7, 0.3]  val acc 0.9467  TEST accuracy 0.9250  macro_f1 0.9241
+2026-11-25 01:28:28 INFO fold 4: scored transfer-panns-cnn14-fc1-v1 (val acc 0.8882)
+2026-11-25 01:28:35 INFO fold 4: scored transfer-resnet18-v1 (val acc 0.8571)
+2026-11-25 01:28:35 INFO fold 4 weights [0.4, 0.6]  val acc 0.9130  TEST accuracy 0.9425  macro_f1 0.9396
+2026-11-25 01:29:08 INFO fold 5: scored transfer-panns-cnn14-fc1-v1 (val acc 0.9497)
+2026-11-25 01:29:16 INFO fold 5: scored transfer-resnet18-v1 (val acc 0.8268)
+2026-11-25 01:29:16 INFO fold 5 weights [0.9, 0.1]  val acc 0.9553  TEST accuracy 0.9050  macro_f1 0.9024
+2026-11-25 01:29:16 INFO DONE ensemble-cnn14fc1-resnet18-v1: accuracy 0.9295 ± 0.0156  macro_f1 0.9275 ± 0.0157 (complete=True)

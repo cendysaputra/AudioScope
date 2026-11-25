@@ -1,0 +1,5 @@
+# Probability-averaging ensemble; weights chosen per fold on the validation split.
+members:
+  - eval/runs/transfer-panns-cnn14-fc1-v1  # a56edd9
+  - eval/runs/transfer-resnet18-v1  # 80d91e6
+weight_step: 0.1

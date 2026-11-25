@@ -1,4 +1,4 @@
-2026-11-24 19:21:48 INFO run transfer-resnet18-v1  config configs/transfer-resnet18.yaml  git 562c44a9c812b537dc7d5a30af40edb04c419344
+2026-11-24 19:21:48 INFO run transfer-resnet18-v1  config configs/transfer-resnet18.yaml  git 80d91e66daf3264501bbc439682f888ebb76b277
 2026-11-24 19:21:48 INFO dataset esc50: 2000 clips, 50 classes, folds [1, 2, 3, 4, 5]
 2026-11-24 19:21:49 INFO fold 1: train=1420 val=180 test=400 (seed 1)
 2026-11-24 19:21:52 INFO model resnet: 11.20M parameters

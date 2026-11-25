@@ -5,7 +5,7 @@
   "model": "baseline_cnn",
   "config_path": "configs/augment-combined.yaml",
   "config_name": "baseline",
-  "git_revision": "1cd0d0bd49ac8339b5e3fdbb2711e48850aa6256",
+  "git_revision": "4ece7231987b5d8105b1b1ec4d6edf8fc6af6a72",
   "folds": [
     1,
     2,

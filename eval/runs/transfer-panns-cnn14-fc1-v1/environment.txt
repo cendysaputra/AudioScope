@@ -1,0 +1,12 @@
+python: 3.13.18
+platform: Linux-6.18.44-fc-v880-x86_64-with-glibc2.39
+torch: 2.15.0+cu132
+torchaudio: 2.11.1+cu132
+numpy: 2.5.3
+torchvision: 0.29.2+cu132
+librosa: 1.0.1
+soundfile: 0.14.0
+matplotlib: 3.11.2
+torch threads: 4
+cuda available: False
+git revision: a56edd9b0b4d9ac40313dd93f647e819813380d3

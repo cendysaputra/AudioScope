@@ -10,7 +10,7 @@ The work sits next to two other projects by the same author: [VisionClassify](ht
 
 The primary dataset is [ESC-50](https://github.com/karolpiczak/ESC-50). An optional second dataset is [UrbanSound8K](https://urbansounddataset.weebly.com/urbansound8k.html).
 
-**Status.** The pipeline, the evaluation harness, and the Streamlit demo are implemented, and every ESC-50 stage in the plan has a reportable 5-fold run: the baseline CNN at 77.2%, augmentation variants within about a point of it, an ImageNet ResNet-18 at 84.3%, and a frozen PANNs Cnn14 with a linear head at 92.0%. See [Results](#results). Task status and the evaluation rules are in [PLAN.md](PLAN.md).
+**Status.** The pipeline, the evaluation harness, and the Streamlit demo are implemented, and every ESC-50 stage in the plan has a reportable 5-fold run: the baseline CNN at 77.2%, augmentation variants within about a point of it, an ImageNet ResNet-18 at 84.2%, a frozen PANNs Cnn14 at 92.0% with a linear head and 92.75% with a trained `fc1`, and a Cnn14 + ResNet-18 ensemble at 92.95%. See [Results](#results). Task status and the evaluation rules are in [PLAN.md](PLAN.md).
 
 ## How it works
 
@@ -142,14 +142,16 @@ All AudioScope numbers below come from `eval/runs/<run-id>/metrics.json`, writte
 <!-- results-table:start -->
 | Run | Config | Model | Accuracy % (mean ± std) | Macro F1 % (mean ± std) | Folds | Git |
 | --- | --- | --- | --- | --- | --- | --- |
-| `augment-combined-v1` | `configs/augment-combined.yaml` | baseline_cnn | 75.4 ± 2.2 | 74.6 ± 2.7 | 5 | `1cd0d0b` |
-| `augment-mixup-v1` | `configs/augment-mixup.yaml` | baseline_cnn | 77.0 ± 2.5 | 76.1 ± 2.8 | 5 | `11d685f` |
-| `augment-noise-v1` | `configs/augment-noise.yaml` | baseline_cnn | 78.1 ± 2.8 | 77.5 ± 2.8 | 5 | `11d685f` |
-| `augment-specaugment-v1` | `configs/augment-specaugment.yaml` | baseline_cnn | 76.5 ± 0.9 | 75.7 ± 1.3 | 5 | `11d685f` |
-| `augment-timeshift-v1` | `configs/augment-timeshift.yaml` | baseline_cnn | 76.4 ± 2.2 | 75.7 ± 2.3 | 5 | `11d685f` |
-| `baseline-v1` | `configs/baseline.yaml` | baseline_cnn | 77.2 ± 1.8 | 76.5 ± 1.9 | 5 | `7a9ff64` |
-| `transfer-panns-cnn14-frozen-v1` | `configs/transfer-panns-cnn14-frozen.yaml` | panns_cnn14 | 92.0 ± 1.9 | 91.8 ± 2.0 | 5 | `39fa178` |
-| `transfer-resnet18-v1` | `configs/transfer-resnet18.yaml` | resnet | 84.2 ± 3.2 | 83.7 ± 3.4 | 5 | `562c44a` |
+| `augment-combined-v1` | `configs/augment-combined.yaml` | baseline_cnn | 75.4 ± 2.2 | 74.6 ± 2.7 | 5 | `4ece723` |
+| `augment-mixup-v1` | `configs/augment-mixup.yaml` | baseline_cnn | 77.0 ± 2.5 | 76.1 ± 2.8 | 5 | `6ed7063` |
+| `augment-noise-v1` | `configs/augment-noise.yaml` | baseline_cnn | 78.1 ± 2.8 | 77.5 ± 2.8 | 5 | `6ed7063` |
+| `augment-specaugment-v1` | `configs/augment-specaugment.yaml` | baseline_cnn | 76.5 ± 0.9 | 75.7 ± 1.3 | 5 | `6ed7063` |
+| `augment-timeshift-v1` | `configs/augment-timeshift.yaml` | baseline_cnn | 76.4 ± 2.2 | 75.7 ± 2.3 | 5 | `6ed7063` |
+| `baseline-v1` | `configs/baseline.yaml` | baseline_cnn | 77.2 ± 1.8 | 76.5 ± 1.9 | 5 | `0af3341` |
+| `ensemble-cnn14fc1-resnet18-v1` | `eval/runs/ensemble-cnn14fc1-resnet18-v1/config.yaml` | ensemble(panns_cnn14, resnet) | 93.0 ± 1.6 | 92.7 ± 1.6 | 5 | `a56edd9` |
+| `transfer-panns-cnn14-fc1-v1` | `configs/transfer-panns-cnn14-fc1.yaml` | panns_cnn14 | 92.8 ± 2.2 | 92.6 ± 2.3 | 5 | `a56edd9` |
+| `transfer-panns-cnn14-frozen-v1` | `configs/transfer-panns-cnn14-frozen.yaml` | panns_cnn14 | 92.0 ± 1.9 | 91.8 ± 2.0 | 5 | `c2a0e05` |
+| `transfer-resnet18-v1` | `configs/transfer-resnet18.yaml` | resnet | 84.2 ± 3.2 | 83.7 ± 3.4 | 5 | `80d91e6` |
 <!-- results-table:end -->
 
 Hardware for these runs: 4 CPU cores, no GPU (see each run's `environment.txt`).
@@ -178,9 +180,15 @@ None of the four separate augmentations moves mean accuracy by more than its fol
 
 `transfer-panns-cnn14-frozen-v1` uses PANNs Cnn14 (Kong et al., 2020, "PANNs: Large-Scale Pretrained Audio Neural Networks for Audio Pattern Recognition"; checkpoint `Cnn14_mAP=0.431.pth`, pretrained on AudioSet) as a **frozen** feature extractor: each clip runs once through the trunk at 32 kHz with Cnn14's own front end, and only a new 2048 → 50 linear head is trained on the cached embeddings. It reached 92.0 ± 1.9% accuracy, between 14.0 and 15.25 points above `baseline-v1` on every fold. Its weakest classes were helicopter (57.5%), washing machine (70%), and airplane (72.5%), the same three the baseline struggled with, at much higher levels. This is a linear probe, not fine-tuning: full fine-tuning of the 80M-parameter model (`configs/transfer-panns-cnn14.yaml`) is a GPU job and was not run. Whether any ESC-50 recordings also appear in AudioSet was not checked.
 
-`transfer-resnet18-v1` fine-tunes torchvision's ImageNet ResNet-18 (He et al., 2016; `ResNet18_Weights.IMAGENET1K_V1`) on the same 22.05 kHz, 64-band log-mel input as the baseline, repeated to three channels and resized to 224 × 224. The backbone is frozen for the first 3 of 30 epochs, then the whole network trains at learning rate 3e-4 with SpecAugment. It reached 84.3 ± 3.2% accuracy, 4.5 to 9.25 points above `baseline-v1` on every fold. Its weakest classes were water drops (47.5%), wind (55%), and helicopter (57.5%). On fold 1 the selected checkpoint was the last epoch, so that fold may not have converged within the 30-epoch budget.
+`transfer-resnet18-v1` fine-tunes torchvision's ImageNet ResNet-18 (He et al., 2016; `ResNet18_Weights.IMAGENET1K_V1`) on the same 22.05 kHz, 64-band log-mel input as the baseline, repeated to three channels and resized to 224 × 224. The backbone is frozen for the first 3 of 30 epochs, then the whole network trains at learning rate 3e-4 with SpecAugment. It reached 84.2 ± 3.2% accuracy, 4.5 to 9.25 points above `baseline-v1` on every fold. Its weakest classes were water drops (47.5%), wind (55%), and helicopter (57.5%). On fold 1 the selected checkpoint was the last epoch, so that fold may not have converged within the 30-epoch budget.
 
 Ranking on every fold: frozen Cnn14 > ResNet-18 > baseline. Cnn14 was ahead of ResNet-18 by 5.75 to 10 points per fold, even though only its linear head was trained. The audio-pretrained representation helped more than the ImageNet one, but the two runs also differ in sample rate, mel settings, and model size, so this is a comparison of the two recipes, not of pretraining data alone.
+
+### Improving the Cnn14 probe and ensembling
+
+Variants of the frozen-Cnn14 probe were compared on the validation splits only (mean over the five folds; test folds were not scored): the linear probe (92.6% validation), the same probe trained on eight extra augmented trunk passes per clip (time shift, noise, SpecAugment; 92.7%), training `fc1` (initialized from the AudioSet checkpoint, learning rate scaled by 0.1) together with the head (93.3%), `fc1` with augmented passes (93.3%), and either probe with feature-space mixup (92.7–92.8%). The simplest variant with the best validation score, training `fc1`, was then run once on the test folds as `transfer-panns-cnn14-fc1-v1`: 92.75 ± 2.2%, ahead of the linear probe on four folds and behind on one (mean +0.75 points).
+
+`ensemble-cnn14fc1-resnet18-v1` averages the class probabilities of that run and `transfer-resnet18-v1` (`eval/ensemble.py`). The weights are chosen per fold on the validation split, on a 0.1 grid; Cnn14 got 0.4 to 1.0 of the weight. It reached 92.95 ± 1.6%, 0.2 points above Cnn14 alone. That gain is smaller than the fold-to-fold spread and is not established by five folds.
 
 Published ESC-50 results for PANNs and other pretrained models are not quoted here: the papers could not be checked from the environment these runs were made in, and the evidence rule requires numbers copied from the source.
 

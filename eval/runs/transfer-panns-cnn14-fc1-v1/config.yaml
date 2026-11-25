@@ -1,0 +1,45 @@
+dataset:
+  name: esc50
+  root: data/esc50
+features:
+  sample_rate: 32000
+  clip_seconds: 5.0
+  n_fft: 1024
+  hop_length: 320
+  n_mels: 64
+  f_min: 50.0
+  f_max: 14000.0
+  mel_scale: slaney
+  mel_norm: slaney
+  log: db
+  log_offset: 1.0e-06
+  kind: logmel
+  normalize: none
+  amin: 1.0e-10
+model:
+  name: panns_cnn14
+  n_mels: 64
+  checkpoint_path: data/pretrained/Cnn14_mAP=0.431.pth
+  dropout: 0.5
+  gradcam_layer: conv_block5
+augment:
+  specaugment: false
+  freq_mask_param: 8
+  time_mask_param: 40
+  num_freq_masks: 2
+  num_time_masks: 2
+train:
+  seed: 0
+  epochs: 100
+  batch_size: 64
+  lr: 0.001
+  weight_decay: 0.01
+  warmup_epochs: 2
+  val_fraction: 0.1
+  early_stopping_patience: null
+  freeze_backbone_epochs: 0
+  mode: frozen_embeddings
+  probe: fc1
+  fc1_lr_scale: 0.1
+name: baseline
+config_path: configs/transfer-panns-cnn14-fc1.yaml

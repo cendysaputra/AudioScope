@@ -1,4 +1,4 @@
-2026-11-24 21:13:45 INFO run transfer-panns-cnn14-frozen-v1  config configs/transfer-panns-cnn14-frozen.yaml  git 39fa17855c60c6fbc14bb31ab138cb89e45d686a
+2026-11-24 21:13:45 INFO run transfer-panns-cnn14-frozen-v1  config configs/transfer-panns-cnn14-frozen.yaml  git c2a0e053c0952caaab67e61008e00d0ed8718a98
 2026-11-24 21:13:45 INFO dataset esc50: 2000 clips, 50 classes, folds [1, 2, 3, 4, 5]
 2026-11-24 21:13:47 INFO cached 500/2000 clips
 2026-11-24 21:13:49 INFO cached 1000/2000 clips

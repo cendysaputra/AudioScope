@@ -5,7 +5,7 @@
   "model": "panns_cnn14",
   "config_path": "configs/transfer-panns-cnn14-frozen.yaml",
   "config_name": "baseline",
-  "git_revision": "39fa17855c60c6fbc14bb31ab138cb89e45d686a",
+  "git_revision": "c2a0e053c0952caaab67e61008e00d0ed8718a98",
   "folds": [
     1,
     2,

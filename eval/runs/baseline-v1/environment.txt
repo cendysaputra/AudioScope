@@ -9,4 +9,4 @@ soundfile: 0.14.0
 matplotlib: 3.11.2
 torch threads: 4
 cuda available: False
-git revision: 7a9ff64e6dfe83b6ef188b6272a9ee86447e158f
+git revision: 0af334111f9fdc413fb2260d114a10ce759c9315
