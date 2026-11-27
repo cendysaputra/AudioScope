@@ -1,0 +1,88 @@
+2026-11-27 08:31:11 INFO run transfer-panns-resnet38-fc1-v1  config configs/transfer-panns-resnet38-fc1.yaml  git 975ac74a7ad753475a0235c7b72bb21ea3cb9234
+2026-11-27 08:31:11 INFO dataset esc50: 2000 clips, 50 classes, folds [1, 2, 3, 4, 5]
+2026-11-27 08:31:16 INFO fold 1: train=1420 val=180 test=400 (seed 1)
+2026-11-27 08:31:22 INFO model panns_resnet38: 72.81M parameters
+2026-11-27 08:31:22 INFO pretrained weights: data/pretrained/ResNet38_mAP=0.434.pth
+2026-11-27 08:31:22 INFO computing trunk features, view 0 of 0
+2026-11-27 08:31:23 INFO embedded 16/2000 clips (1s)
+2026-11-27 08:31:53 INFO embedded 416/2000 clips (31s)
+2026-11-27 08:32:22 INFO embedded 816/2000 clips (61s)
+2026-11-27 08:32:53 INFO embedded 1216/2000 clips (91s)
+2026-11-27 08:33:24 INFO embedded 1616/2000 clips (122s)
+2026-11-27 08:34:02 INFO fold 1 head epoch  10  loss 0.3044  acc 0.961  val_acc 0.928
+2026-11-27 08:34:06 INFO fold 1 head epoch  20  loss 0.1268  acc 0.989  val_acc 0.933
+2026-11-27 08:34:09 INFO fold 1 head epoch  30  loss 0.0680  acc 0.996  val_acc 0.950
+2026-11-27 08:34:13 INFO fold 1 head epoch  40  loss 0.0487  acc 0.997  val_acc 0.944
+2026-11-27 08:34:17 INFO fold 1 head epoch  50  loss 0.0346  acc 0.999  val_acc 0.950
+2026-11-27 08:34:21 INFO fold 1 head epoch  60  loss 0.0313  acc 1.000  val_acc 0.944
+2026-11-27 08:34:25 INFO fold 1 head epoch  70  loss 0.0263  acc 1.000  val_acc 0.944
+2026-11-27 08:34:29 INFO fold 1 head epoch  80  loss 0.0250  acc 1.000  val_acc 0.939
+2026-11-27 08:34:34 INFO fold 1 head epoch  90  loss 0.0215  acc 1.000  val_acc 0.944
+2026-11-27 08:34:38 INFO fold 1 head epoch 100  loss 0.0233  acc 1.000  val_acc 0.944
+2026-11-27 08:34:38 INFO fold 1: selected head epoch 47 (val_acc 0.9500)
+2026-11-27 08:34:39 INFO fold 1 TEST accuracy 0.9525  macro_f1 0.9513
+2026-11-27 08:34:39 INFO fold 2: train=1429 val=171 test=400 (seed 2)
+2026-11-27 08:34:45 INFO model panns_resnet38: 72.81M parameters
+2026-11-27 08:34:45 INFO pretrained weights: data/pretrained/ResNet38_mAP=0.434.pth
+2026-11-27 08:34:45 INFO loading cached features data/cache/feat_esc50_2339c753a3fb.pt (view 0)
+2026-11-27 08:34:50 INFO fold 2 head epoch  10  loss 0.3035  acc 0.962  val_acc 0.936
+2026-11-27 08:34:54 INFO fold 2 head epoch  20  loss 0.1252  acc 0.989  val_acc 0.959
+2026-11-27 08:34:58 INFO fold 2 head epoch  30  loss 0.0698  acc 0.998  val_acc 0.953
+2026-11-27 08:35:03 INFO fold 2 head epoch  40  loss 0.0513  acc 0.998  val_acc 0.959
+2026-11-27 08:35:07 INFO fold 2 head epoch  50  loss 0.0346  acc 1.000  val_acc 0.959
+2026-11-27 08:35:12 INFO fold 2 head epoch  60  loss 0.0280  acc 1.000  val_acc 0.953
+2026-11-27 08:35:16 INFO fold 2 head epoch  70  loss 0.0258  acc 1.000  val_acc 0.953
+2026-11-27 08:35:20 INFO fold 2 head epoch  80  loss 0.0250  acc 1.000  val_acc 0.959
+2026-11-27 08:35:24 INFO fold 2 head epoch  90  loss 0.0241  acc 1.000  val_acc 0.959
+2026-11-27 08:35:28 INFO fold 2 head epoch 100  loss 0.0217  acc 1.000  val_acc 0.959
+2026-11-27 08:35:28 INFO fold 2: selected head epoch 45 (val_acc 0.9708)
+2026-11-27 08:35:28 INFO fold 2 TEST accuracy 0.9525  macro_f1 0.9521
+2026-11-27 08:35:28 INFO fold 3: train=1431 val=169 test=400 (seed 3)
+2026-11-27 08:35:33 INFO model panns_resnet38: 72.81M parameters
+2026-11-27 08:35:33 INFO pretrained weights: data/pretrained/ResNet38_mAP=0.434.pth
+2026-11-27 08:35:33 INFO loading cached features data/cache/feat_esc50_2339c753a3fb.pt (view 0)
+2026-11-27 08:35:37 INFO fold 3 head epoch  10  loss 0.2864  acc 0.973  val_acc 0.917
+2026-11-27 08:35:42 INFO fold 3 head epoch  20  loss 0.1084  acc 0.993  val_acc 0.947
+2026-11-27 08:35:46 INFO fold 3 head epoch  30  loss 0.0603  acc 0.999  val_acc 0.953
+2026-11-27 08:35:50 INFO fold 3 head epoch  40  loss 0.0360  acc 0.999  val_acc 0.953
+2026-11-27 08:35:54 INFO fold 3 head epoch  50  loss 0.0289  acc 1.000  val_acc 0.953
+2026-11-27 08:35:59 INFO fold 3 head epoch  60  loss 0.0241  acc 1.000  val_acc 0.947
+2026-11-27 08:36:08 INFO fold 3 head epoch  70  loss 0.0182  acc 1.000  val_acc 0.947
+2026-11-27 08:36:12 INFO fold 3 head epoch  80  loss 0.0186  acc 1.000  val_acc 0.947
+2026-11-27 08:36:16 INFO fold 3 head epoch  90  loss 0.0163  acc 1.000  val_acc 0.953
+2026-11-27 08:36:20 INFO fold 3 head epoch 100  loss 0.0183  acc 1.000  val_acc 0.953
+2026-11-27 08:36:20 INFO fold 3: selected head epoch 41 (val_acc 0.9586)
+2026-11-27 08:36:20 INFO fold 3 TEST accuracy 0.9200  macro_f1 0.9195
+2026-11-27 08:36:20 INFO fold 4: train=1439 val=161 test=400 (seed 4)
+2026-11-27 08:36:25 INFO model panns_resnet38: 72.81M parameters
+2026-11-27 08:36:25 INFO pretrained weights: data/pretrained/ResNet38_mAP=0.434.pth
+2026-11-27 08:36:25 INFO loading cached features data/cache/feat_esc50_2339c753a3fb.pt (view 0)
+2026-11-27 08:36:30 INFO fold 4 head epoch  10  loss 0.2924  acc 0.969  val_acc 0.925
+2026-11-27 08:36:35 INFO fold 4 head epoch  20  loss 0.1263  acc 0.989  val_acc 0.932
+2026-11-27 08:36:40 INFO fold 4 head epoch  30  loss 0.0659  acc 0.997  val_acc 0.932
+2026-11-27 08:36:45 INFO fold 4 head epoch  40  loss 0.0465  acc 0.999  val_acc 0.925
+2026-11-27 08:36:50 INFO fold 4 head epoch  50  loss 0.0358  acc 0.999  val_acc 0.932
+2026-11-27 08:36:54 INFO fold 4 head epoch  60  loss 0.0295  acc 1.000  val_acc 0.932
+2026-11-27 08:36:58 INFO fold 4 head epoch  70  loss 0.0224  acc 1.000  val_acc 0.925
+2026-11-27 08:37:02 INFO fold 4 head epoch  80  loss 0.0234  acc 1.000  val_acc 0.925
+2026-11-27 08:37:06 INFO fold 4 head epoch  90  loss 0.0208  acc 1.000  val_acc 0.925
+2026-11-27 08:37:11 INFO fold 4 head epoch 100  loss 0.0190  acc 1.000  val_acc 0.925
+2026-11-27 08:37:11 INFO fold 4: selected head epoch 28 (val_acc 0.9317)
+2026-11-27 08:37:11 INFO fold 4 TEST accuracy 0.9475  macro_f1 0.9468
+2026-11-27 08:37:11 INFO fold 5: train=1421 val=179 test=400 (seed 5)
+2026-11-27 08:37:16 INFO model panns_resnet38: 72.81M parameters
+2026-11-27 08:37:16 INFO pretrained weights: data/pretrained/ResNet38_mAP=0.434.pth
+2026-11-27 08:37:16 INFO loading cached features data/cache/feat_esc50_2339c753a3fb.pt (view 0)
+2026-11-27 08:37:21 INFO fold 5 head epoch  10  loss 0.2889  acc 0.972  val_acc 0.944
+2026-11-27 08:37:26 INFO fold 5 head epoch  20  loss 0.1325  acc 0.988  val_acc 0.950
+2026-11-27 08:37:30 INFO fold 5 head epoch  30  loss 0.0629  acc 0.996  val_acc 0.944
+2026-11-27 08:37:34 INFO fold 5 head epoch  40  loss 0.0385  acc 0.999  val_acc 0.939
+2026-11-27 08:37:39 INFO fold 5 head epoch  50  loss 0.0306  acc 1.000  val_acc 0.944
+2026-11-27 08:37:43 INFO fold 5 head epoch  60  loss 0.0221  acc 1.000  val_acc 0.939
+2026-11-27 08:37:48 INFO fold 5 head epoch  70  loss 0.0210  acc 1.000  val_acc 0.939
+2026-11-27 08:37:52 INFO fold 5 head epoch  80  loss 0.0209  acc 1.000  val_acc 0.944
+2026-11-27 08:37:57 INFO fold 5 head epoch  90  loss 0.0208  acc 1.000  val_acc 0.944
+2026-11-27 08:38:01 INFO fold 5 head epoch 100  loss 0.0220  acc 1.000  val_acc 0.944
+2026-11-27 08:38:01 INFO fold 5: selected head epoch 24 (val_acc 0.9497)
+2026-11-27 08:38:02 INFO fold 5 TEST accuracy 0.9225  macro_f1 0.9174
+2026-11-27 08:38:03 INFO DONE transfer-panns-resnet38-fc1-v1: accuracy 0.9390 ± 0.0164  macro_f1 0.9374 ± 0.0175 over folds [1, 2, 3, 4, 5] (complete=True)
