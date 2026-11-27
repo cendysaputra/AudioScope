@@ -6,7 +6,7 @@ import torch.nn as nn
 
 from .baseline import BaselineCNN
 from .gradcam import GradCAM
-from .panns import Cnn14Classifier
+from .panns import Cnn14Classifier, ResNet38Classifier
 from .resnet import ResNetSpectrogram
 
 
@@ -20,6 +20,8 @@ def build_model(model_cfg: dict, num_classes: int) -> nn.Module:
         return ResNetSpectrogram(num_classes=num_classes, **cfg)
     if name == "panns_cnn14":
         return Cnn14Classifier(num_classes=num_classes, **cfg)
+    if name == "panns_resnet38":
+        return ResNet38Classifier(num_classes=num_classes, **cfg)
     raise ValueError(f"unknown model {name!r}")
 
 
@@ -28,4 +30,4 @@ def gradcam_layer(model_cfg: dict, model: nn.Module) -> str:
     return model_cfg.get("gradcam_layer") or model.default_gradcam_layer
 
 
-__all__ = ["BaselineCNN", "Cnn14Classifier", "GradCAM", "ResNetSpectrogram", "build_model", "gradcam_layer"]
+__all__ = ["BaselineCNN", "Cnn14Classifier", "GradCAM", "ResNet38Classifier", "ResNetSpectrogram", "build_model", "gradcam_layer"]

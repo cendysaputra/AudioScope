@@ -1,0 +1,17 @@
+# Stage 3c: the same probe as transfer-panns-cnn14-fc1.yaml on PANNs Cnn14_16k
+# (AudioSet mAP 0.438, Zenodo record 3987831, CC BY 4.0): the Cnn14 network
+# trained on a 16 kHz front end. Fetched with
+# `python -m audioscope.data.download --weights cnn14_16k`.
+base: transfer-panns-cnn14-fc1.yaml
+features:
+  sample_rate: 16000
+  n_fft: 512
+  hop_length: 160
+  f_min: 50.0
+  f_max: 8000.0
+model:
+  name: panns_cnn14
+  n_mels: 64
+  checkpoint_path: data/pretrained/Cnn14_16k_mAP=0.438.pth
+  dropout: 0.5
+  gradcam_layer: conv_block6

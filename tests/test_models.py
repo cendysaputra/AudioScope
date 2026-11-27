@@ -1,6 +1,13 @@
 import torch
 
-from audioscope.models import BaselineCNN, Cnn14Classifier, GradCAM, ResNetSpectrogram, build_model
+from audioscope.models import (
+    BaselineCNN,
+    Cnn14Classifier,
+    GradCAM,
+    ResNet38Classifier,
+    ResNetSpectrogram,
+    build_model,
+)
 
 
 def test_baseline_forward_and_gradcam():
@@ -40,8 +47,31 @@ def test_cnn14_loads_trunk_from_checkpoint(tmp_path):
     assert m(torch.randn(2, 1, 64, 101)).shape == (2, 50)
 
 
+def test_resnet38_loads_trunk_and_gradcam(tmp_path):
+    src = ResNet38Classifier(num_classes=527)
+    state = {k: v for k, v in src.state_dict().items() if not k.startswith("head.")}
+    state["fc_audioset.weight"] = torch.zeros(527, 2048)
+    torch.save({"model": state}, tmp_path / "resnet38.pth")
+    m = ResNet38Classifier(num_classes=50, checkpoint_path=str(tmp_path / "resnet38.pth"))
+    assert torch.equal(m.resnet.layer2[0].downsample[1].weight, src.resnet.layer2[0].downsample[1].weight)
+    m.eval()
+    x = torch.randn(2, 1, 64, 101)
+    assert m(x).shape == (2, 50) and m.pooled(x).shape == (2, 2048)
+    cam, _ = GradCAM(m, m.default_gradcam_layer)(x)
+    assert cam.shape == (2, 64, 101)
+
+
+def test_resnet38_checkpoint_mismatch_is_an_error(tmp_path):
+    import pytest
+
+    torch.save({"model": Cnn14Classifier(num_classes=527).state_dict()}, tmp_path / "cnn14.pth")
+    with pytest.raises(RuntimeError, match="mismatch"):
+        ResNet38Classifier(num_classes=50, checkpoint_path=str(tmp_path / "cnn14.pth"))
+
+
 def test_build_model_names():
     assert isinstance(build_model({"name": "baseline_cnn", "channels": [4, 8]}, 3), BaselineCNN)
+    assert isinstance(build_model({"name": "panns_resnet38"}, 3), ResNet38Classifier)
 
 
 def test_frozen_backbone_keeps_batchnorm_stats():

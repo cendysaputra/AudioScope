@@ -1,0 +1,10 @@
+# Stage 3c: the same probe as transfer-panns-cnn14-fc1.yaml on PANNs ResNet38
+# (AudioSet mAP 0.434, Zenodo record 3987831, CC BY 4.0). Same 32 kHz front end
+# as Cnn14. Fetched with `python -m audioscope.data.download --weights resnet38`.
+base: transfer-panns-cnn14-fc1.yaml
+model:
+  name: panns_resnet38
+  n_mels: 64
+  checkpoint_path: data/pretrained/ResNet38_mAP=0.434.pth
+  dropout: 0.5
+  gradcam_layer: conv_block_after1

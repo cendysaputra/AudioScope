@@ -31,7 +31,7 @@ class Predictor:
         # Weights come from the checkpoint; never re-download a pretrained source here.
         if model_cfg["name"] == "resnet":
             model_cfg["pretrained"] = None
-        if model_cfg["name"] == "panns_cnn14":
+        if model_cfg["name"] in ("panns_cnn14", "panns_resnet38"):
             model_cfg["checkpoint_path"] = None
         self.model = build_model(model_cfg, len(self.class_names)).to(self.device)
         self.model.load_state_dict(checkpoint["model_state"])

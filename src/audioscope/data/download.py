@@ -8,7 +8,7 @@ they are kept under ``data/`` and never committed.
 
 Pretrained weights for Stage 3 go to ``data/pretrained``:
 
-    python -m audioscope.data.download --weights resnet18 cnn14
+    python -m audioscope.data.download --weights resnet18 cnn14 cnn14_16k resnet38
 
 UrbanSound8K requires accepting its terms on the dataset page; unpack it to
 ``data/urbansound8k`` by hand (``metadata/`` and ``audio/fold1..10``).
@@ -67,26 +67,43 @@ def download_esc50(dest: str | Path = "data/esc50", method: str = "auto") -> Pat
     raise RuntimeError("ESC-50 download failed: " + "; ".join(errors))
 
 
+_ZENODO = "https://zenodo.org/record/3987831/files/{}?download=1"
+# Hugging Face copy of the same Zenodo files, tried when Zenodo is unreachable.
+_HF_PANNS = "https://huggingface.co/niobures/PANNs/resolve/main/models/pretrained/{}"
+
 WEIGHTS = {
     # torchvision ResNet18_Weights.IMAGENET1K_V1 (BSD-3-Clause, torchvision)
-    "resnet18": ("https://download.pytorch.org/models/resnet18-f37072fd.pth", "resnet18-f37072fd.pth"),
-    # PANNs Cnn14, AudioSet mAP 0.431 (Zenodo record 3987831, CC BY 4.0)
-    "cnn14": ("https://zenodo.org/record/3987831/files/Cnn14_mAP%3D0.431.pth?download=1", "Cnn14_mAP=0.431.pth"),
+    "resnet18": (["https://download.pytorch.org/models/resnet18-f37072fd.pth"], "resnet18-f37072fd.pth"),
+    # PANNs checkpoints (Kong et al., 2020; Zenodo record 3987831, CC BY 4.0)
+    "cnn14": ([_ZENODO.format("Cnn14_mAP%3D0.431.pth"), _HF_PANNS.format("Cnn14_mAP%3D0.431.pth")],
+              "Cnn14_mAP=0.431.pth"),
+    "cnn14_16k": ([_ZENODO.format("Cnn14_16k_mAP%3D0.438.pth"), _HF_PANNS.format("Cnn14_16k_mAP%3D0.438.pth")],
+                  "Cnn14_16k_mAP=0.438.pth"),
+    "resnet38": ([_ZENODO.format("ResNet38_mAP%3D0.434.pth"), _HF_PANNS.format("ResNet38_mAP%3D0.434.pth")],
+                 "ResNet38_mAP=0.434.pth"),
 }
 
 
 def download_weights(name: str, dest: str | Path = "data/pretrained") -> Path:
-    url, fname = WEIGHTS[name]
+    urls, fname = WEIGHTS[name]
     path = Path(dest) / fname
     if path.exists():
         print(f"{name}: already at {path}")
         return path
     path.parent.mkdir(parents=True, exist_ok=True)
-    print(f"{name}: downloading {url}")
     tmp = path.with_suffix(".part")
-    urllib.request.urlretrieve(url, tmp)
-    tmp.rename(path)
-    return path
+    errors = []
+    for url in urls:
+        print(f"{name}: downloading {url}")
+        try:
+            urllib.request.urlretrieve(url, tmp)
+        except OSError as exc:
+            errors.append(f"{url}: {exc}")
+            tmp.unlink(missing_ok=True)
+            continue
+        tmp.rename(path)
+        return path
+    raise RuntimeError(f"{name} download failed: " + "; ".join(errors))
 
 
 def main() -> None:
