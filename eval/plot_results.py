@@ -30,6 +30,9 @@ LABELS = {
     "transfer-panns-cnn14-frozen-v1": "PANNs Cnn14 (AudioSet), linear probe",
     "transfer-panns-cnn14-fc1-v1": "PANNs Cnn14, fc1 + head trained",
     "ensemble-cnn14fc1-resnet18-v1": "Ensemble: Cnn14 + ResNet-18",
+    "transfer-panns-cnn14-16k-fc1-v1": "PANNs Cnn14_16k, fc1 + head trained",
+    "transfer-panns-resnet38-fc1-v1": "PANNs ResNet38, fc1 + head trained",
+    "ensemble-panns3-v1": "Ensemble: Cnn14 + Cnn14_16k + ResNet38",
 }
 GROUPS = [  # (title, run-id prefix test, color) in fixed categorical order
     ("CNN trained from scratch", lambda r: r.startswith(("baseline", "augment")), "#257de0"),
